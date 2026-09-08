@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile distinguishing Brand Partners from Direct Customers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "email": { "type": "string", "description": "User email address" },
+        "name": { "type": "string", "description": "Full name of the user" },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "role": { "type": "string", "enum": ["CUSTOMER", "SELLER"], "description": "CUSTOMER for buyer, SELLER for Brand Partner" },
+        "bpNumber": { "type": "string", "description": "Oriflame Brand Partner Consultant Number" },
+        "address": { "type": "string", "description": "Delivery address" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp" }
+      },
+      "required": ["id", "email", "name", "role", "createdAt"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Customer and Brand Partner orders and purchase histories for service and dispatch",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Order ID" },
+        "userId": { "type": "string", "description": "Purchasing user ID" },
+        "customerName": { "type": "string", "description": "Customer name" },
+        "customerPhone": { "type": "string", "description": "Customer phone" },
+        "customerRole": { "type": "string", "enum": ["CUSTOMER", "SELLER"], "description": "Account type" },
+        "items": { "type": "string", "description": "Serialized list of ordered items with SKU and quantity" },
+        "totalAmount": { "type": "number", "description": "Total order amount in INR" },
+        "status": { "type": "string", "enum": ["PENDING", "CONFIRMED", "DISPATCHED", "DELIVERED", "CANCELLED"], "description": "Current order progress" },
+        "deliveryAddress": { "type": "string", "description": "Shipping address" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "notes": { "type": "string", "description": "Service notes or dispatch remarks" }
+      },
+      "required": ["id", "customerName", "customerPhone", "totalAmount", "status", "createdAt"]
+    },
+    "intake": {
+      "title": "SellerIntake",
+      "description": "Brand Partner clearance stock intake requests for liquidation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Intake ID" },
+        "userId": { "type": "string", "description": "Seller User ID" },
+        "sellerName": { "type": "string", "description": "Brand Partner name" },
+        "bpNumber": { "type": "string", "description": "Brand Partner Number" },
+        "phone": { "type": "string", "description": "Seller WhatsApp phone" },
+        "productCount": { "type": "number", "description": "Quantity of units" },
+        "totalRetailValue": { "type": "number", "description": "Total MRP value" },
+        "offeringDiscount": { "type": "number", "description": "Proposed clearance discount" },
+        "status": { "type": "string", "enum": ["PENDING_VERIFICATION", "APPROVED", "REJECTED"], "description": "Verification status" },
+        "createdAt": { "type": "string", "description": "Submission timestamp" }
+      },
+      "required": ["id", "sellerName", "bpNumber", "phone", "productCount", "status", "createdAt"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "Oriflame catalog inventory items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Product ID" },
+        "sku": { "type": "string", "description": "SKU code" },
+        "title": { "type": "string", "description": "Product title" },
+        "category": { "type": "string", "description": "Product category" },
+        "mrp": { "type": "number", "description": "MRP in INR" },
+        "clearancePrice": { "type": "number", "description": "Clearance selling price" },
+        "stock": { "type": "number", "description": "Stock count" },
+        "image": { "type": "string", "description": "Product image URL" },
+        "volume": { "type": "string", "description": "Packaging size" },
+        "tag": { "type": "string", "description": "Badge highlight" },
+        "inStock": { "type": "string", "description": "Stock availability flag" }
+      },
+      "required": ["id", "sku", "title", "mrp", "clearancePrice", "stock"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Collection of individual customer and Brand Partner user accounts"
+    },
+    "/orders/{orderId}": {
+      "schema": "order",
+      "description": "Order records for future fulfillment, warranty, and customer service"
+    },
+    "/intakes/{intakeId}": {
+      "schema": "intake",
+      "description": "Brand Partner clearance stock intake requests"
+    },
+    "/products/{productId}": {
+      "schema": "product",
+      "description": "Catalog products inventory"
+    }
+  }
+}

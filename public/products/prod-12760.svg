@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f3e2e" />
+      <stop offset="100%" stop-color="#1c5e46" />
+    </linearGradient>
+
+    <linearGradient id="jarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="50%" stop-color="#1c5e46" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <linearGradient id="goldCapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#a16207" />
+    </linearGradient>
+
+    <filter id="dropGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#f59e0b" flood-opacity="0.3" />
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="500" height="500" rx="36" fill="url(#bgGrad)" />
+
+  <!-- Subtle Radial Spotlight -->
+  <circle cx="250" cy="250" r="180" fill="#f59e0b" opacity="0.08" filter="blur(40px)" />
+
+  <!-- Header Category & Oriflame Stockholm Badge -->
+  <g transform="translate(30, 40)">
+    <rect x="0" y="0" width="140" height="26" rx="13" fill="#000000" opacity="0.4" stroke="#f59e0b" stroke-width="1" />
+    <text x="70" y="17" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#f59e0b" letter-spacing="1">SKU #12760</text>
+  </g>
+
+  <g transform="translate(330, 40)">
+    <text x="140" y="16" text-anchor="end" font-family="sans-serif" font-size="10" font-weight="semibold" fill="#94a3b8" letter-spacing="1">ORIFLAME SWEDEN</text>
+  </g>
+
+  <!-- Render Product Silhouette -->
+  
+      <!-- Hexagonal / Oval Heritage Egg Pot -->
+      <ellipse cx="250" cy="280" rx="90" ry="110" fill="url(#jarGrad)" stroke="#d97706" stroke-width="4" filter="url(#dropGlow)" />
+      <!-- Golden Oriflame Crown Crest -->
+      <circle cx="250" cy="240" r="28" fill="#d97706" opacity="0.9" />
+      <path d="M 238 245 L 245 232 L 250 242 L 255 232 L 262 245 Z" fill="#ffffff" />
+      <ellipse cx="250" cy="200" rx="80" ry="24" fill="#fef3c7" stroke="#b45309" stroke-width="3" />
+      <!-- Tender Care Script -->
+      <text x="250" y="310" text-anchor="middle" font-family="serif" font-size="16" font-weight="bold" fill="#fef3c7" letter-spacing="2">TENDER CARE</text>
+      <text x="250" y="328" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#cbd5e1" letter-spacing="1">PROTECTING BALM</text>
+    
+
+  <!-- Footer Verification & Extracts Info -->
+  <g transform="translate(250, 440)">
+    <rect x="-190" y="-20" width="380" height="34" rx="17" fill="#000000" opacity="0.6" stroke="#334155" stroke-width="1" />
+    <text x="0" y="2" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="semibold" fill="#e2e8f0">100% Organic Beeswax & Vitamin E • 15ml</text>
+  </g>
+</svg>

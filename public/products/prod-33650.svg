@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+
+    <linearGradient id="jarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <linearGradient id="goldCapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#a16207" />
+    </linearGradient>
+
+    <filter id="dropGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#38bdf8" flood-opacity="0.3" />
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="500" height="500" rx="36" fill="url(#bgGrad)" />
+
+  <!-- Subtle Radial Spotlight -->
+  <circle cx="250" cy="250" r="180" fill="#38bdf8" opacity="0.08" filter="blur(40px)" />
+
+  <!-- Header Category & Oriflame Stockholm Badge -->
+  <g transform="translate(30, 40)">
+    <rect x="0" y="0" width="140" height="26" rx="13" fill="#000000" opacity="0.4" stroke="#38bdf8" stroke-width="1" />
+    <text x="70" y="17" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#38bdf8" letter-spacing="1">SKU #33650</text>
+  </g>
+
+  <g transform="translate(330, 40)">
+    <text x="140" y="16" text-anchor="end" font-family="sans-serif" font-size="10" font-weight="semibold" fill="#94a3b8" letter-spacing="1">ORIFLAME SWEDEN</text>
+  </g>
+
+  <!-- Render Product Silhouette -->
+  
+      <!-- Chiseled Norse Flask -->
+      <rect x="175" y="180" width="150" height="185" rx="18" fill="url(#jarGrad)" stroke="#38bdf8" stroke-width="3" filter="url(#dropGlow)" />
+      <!-- Thor Hammer / Ice Chain Band -->
+      <rect x="175" y="240" width="150" height="30" fill="#334155" stroke="#94a3b8" stroke-width="1.5" />
+      <text x="250" y="260" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold" fill="#f8fafc" letter-spacing="3">POSSESS</text>
+      <!-- Flask Cap -->
+      <rect x="215" y="130" width="70" height="50" rx="8" fill="#64748b" stroke="#cbd5e1" stroke-width="2" />
+      <text x="250" y="315" text-anchor="middle" font-family="serif" font-size="11" font-weight="semibold" fill="#38bdf8" letter-spacing="2">THE SECRET MAN</text>
+      <text x="250" y="335" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#94a3b8" letter-spacing="2">EAU DE PARFUM</text>
+    
+
+  <!-- Footer Verification & Extracts Info -->
+  <g transform="translate(250, 440)">
+    <rect x="-190" y="-20" width="380" height="34" rx="17" fill="#000000" opacity="0.6" stroke="#334155" stroke-width="1" />
+    <text x="0" y="2" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="semibold" fill="#e2e8f0">Frozen Ice Accord & Oak Wood • 75ml EDP</text>
+  </g>
+</svg>

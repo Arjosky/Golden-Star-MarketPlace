@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#382405" />
+      <stop offset="100%" stop-color="#573a09" />
+    </linearGradient>
+
+    <linearGradient id="jarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="50%" stop-color="#573a09" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <linearGradient id="goldCapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#a16207" />
+    </linearGradient>
+
+    <filter id="dropGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#fbbf24" flood-opacity="0.3" />
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="500" height="500" rx="36" fill="url(#bgGrad)" />
+
+  <!-- Subtle Radial Spotlight -->
+  <circle cx="250" cy="250" r="180" fill="#fbbf24" opacity="0.08" filter="blur(40px)" />
+
+  <!-- Header Category & Oriflame Stockholm Badge -->
+  <g transform="translate(30, 40)">
+    <rect x="0" y="0" width="140" height="26" rx="13" fill="#000000" opacity="0.4" stroke="#fbbf24" stroke-width="1" />
+    <text x="70" y="17" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#fbbf24" letter-spacing="1">SKU #31602</text>
+  </g>
+
+  <g transform="translate(330, 40)">
+    <text x="140" y="16" text-anchor="end" font-family="sans-serif" font-size="10" font-weight="semibold" fill="#94a3b8" letter-spacing="1">ORIFLAME SWEDEN</text>
+  </g>
+
+  <!-- Render Product Silhouette -->
+  
+      <!-- Round Luxury Tub -->
+      <ellipse cx="250" cy="270" rx="105" ry="90" fill="url(#jarGrad)" stroke="#f59e0b" stroke-width="3" filter="url(#dropGlow)" />
+      <ellipse cx="250" cy="205" rx="95" ry="25" fill="#fef08a" stroke="#d97706" stroke-width="3" />
+      <!-- Golden Bee & Honeycomb Badge -->
+      <polygon points="250,240 265,248 265,265 250,273 235,265 235,248" fill="#f59e0b" opacity="0.8" />
+      <text x="250" y="305" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold" fill="#fef3c7">MILK & HONEY</text>
+      <text x="250" y="322" text-anchor="middle" font-family="serif" font-size="12" font-weight="bold" fill="#fde68a">GOLD</text>
+      <text x="250" y="338" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#cbd5e1">SMOOTHING SUGAR SCRUB</text>
+    
+
+  <!-- Footer Verification & Extracts Info -->
+  <g transform="translate(250, 440)">
+    <rect x="-190" y="-20" width="380" height="34" rx="17" fill="#000000" opacity="0.6" stroke="#334155" stroke-width="1" />
+    <text x="0" y="2" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="semibold" fill="#e2e8f0">Organic Milk Protein & Honey Nectar • 200ml Jar</text>
+  </g>
+</svg>
