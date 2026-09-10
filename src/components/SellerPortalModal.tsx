@@ -18,13 +18,15 @@ import {
   Upload,
   Image as ImageIcon
 } from 'lucide-react';
-import { Category, SellerIntake, IntakeProductItem } from '../types';
+import { Category, SellerIntake, IntakeProductItem, Product } from '../types';
+import { getStoredProducts, addOrUpdateSellerStockItem } from '../utils/storage';
 
 interface SellerPortalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitIntake: (intake: SellerIntake) => void;
   isStandaloneView?: boolean;
+  products?: Product[];
 }
 
 interface ItemDraft {
@@ -39,6 +41,7 @@ interface ItemDraft {
   expiryDate: string; // mm/yy
   condition: 'Factory Sealed' | 'Mint Boxed' | 'Store Display';
   imageUrl?: string;
+  mrp?: number;
 }
 
 const createDefaultItem = (index: number): ItemDraft => ({
@@ -69,15 +72,39 @@ export const SellerPortalModal: React.FC<SellerPortalModalProps> = ({
   onClose,
   onSubmitIntake,
   isStandaloneView = false,
+  products,
 }) => {
+  // Master Catalog products (Only Admin can add/edit photos, title & details)
+  const catalogProducts = (products && products.length > 0) ? products : getStoredProducts();
+
+  // Helper to create an item draft pre-linked to master catalog product
+  const createDefaultItemFromCatalog = (index: number): ItemDraft => {
+    const defaultProd = catalogProducts[index % catalogProducts.length] || catalogProducts[0];
+    return {
+      id: `item-${Date.now()}-${index}`,
+      productName: defaultProd ? defaultProd.title : 'Tender Care Protecting Balm',
+      sku: defaultProd ? defaultProd.sku : '12760',
+      category: defaultProd ? defaultProd.category : 'Skincare',
+      quantity: 5,
+      askingPrice: defaultProd ? (defaultProd.clearancePrice || Math.round(defaultProd.mrp * 0.6)) : 249,
+      productDetails: defaultProd ? (defaultProd.details || defaultProd.description) : '',
+      mnfDate: '01/24',
+      expiryDate: '12/26',
+      condition: 'Factory Sealed',
+      imageUrl: defaultProd ? defaultProd.imageUrl : '',
+      mrp: defaultProd ? defaultProd.mrp : 399,
+    };
+  };
+
   // Brand Partner Identification State
   const [partnerName, setPartnerName] = useState('');
   const [consultantId, setConsultantId] = useState('');
   const [phone, setPhone] = useState('');
+  const [partnerPincode, setPartnerPincode] = useState('700028');
   const [upiIdOrBank, setUpiIdOrBank] = useState('');
 
-  // Multiple Products Intake State (Optional multiple add)
-  const [items, setItems] = useState<ItemDraft[]>([createDefaultItem(1)]);
+  // Multiple Products Intake State (Brand Partner selects SKU from Dropdown)
+  const [items, setItems] = useState<ItemDraft[]>(() => [createDefaultItemFromCatalog(0)]);
 
   // Terms & Conditions Checkbox State
   const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
@@ -88,9 +115,30 @@ export const SellerPortalModal: React.FC<SellerPortalModalProps> = ({
 
   if (!isOpen && !isStandaloneView) return null;
 
-  // Add another product (Optional)
+  // Add another product (Brand partner selects code from dropdown)
   const handleAddItem = () => {
-    setItems((prev) => [...prev, createDefaultItem(prev.length + 1)]);
+    setItems((prev) => [...prev, createDefaultItemFromCatalog(prev.length)]);
+  };
+
+  // Handle Dropdown Selection of Product Code
+  const handleSelectProduct = (itemId: string, selectedSku: string) => {
+    const prod = catalogProducts.find((p) => p.sku === selectedSku);
+    if (!prod) return;
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return {
+          ...item,
+          sku: prod.sku,
+          productName: prod.title,
+          category: prod.category,
+          imageUrl: prod.imageUrl,
+          mrp: prod.mrp,
+          askingPrice: prod.clearancePrice || Math.round(prod.mrp * 0.6),
+          productDetails: prod.details || prod.description || '',
+        };
+      })
+    );
   };
 
   // Remove a product (if more than 1)
@@ -99,7 +147,7 @@ export const SellerPortalModal: React.FC<SellerPortalModalProps> = ({
     setItems((prev) => prev.filter((item) => item.id !== idToRemove));
   };
 
-  // Update specific field on an item
+  // Update specific field on an item (quantity, dates, condition, etc.)
   const handleUpdateItem = <K extends keyof ItemDraft>(
     id: string,
     field: K,
@@ -194,6 +242,29 @@ export const SellerPortalModal: React.FC<SellerPortalModalProps> = ({
 
     onSubmitIntake(newIntake);
     setSubmittedIntake(newIntake);
+
+    // Save each item to the central Seller Stock Database (tracked by Admin)
+    convertedItems.forEach((it) => {
+      addOrUpdateSellerStockItem({
+        id: `stk-${Date.now()}-${it.sku}-${Math.floor(Math.random() * 1000)}`,
+        sellerName: partnerName.trim(),
+        consultantId: consultantId.trim().toUpperCase(),
+        phone: phone.trim(),
+        pincode: partnerPincode.trim() || '700028',
+        productCode: it.sku,
+        productTitle: it.productName,
+        category: it.category,
+        imageUrl: it.imageUrl || '/products/proof-clearance.svg',
+        quantity: it.quantity,
+        expiryDate: it.expiryDate || '12/26',
+        mnfDate: it.mnfDate || '01/24',
+        askingPrice: it.askingPricePerUnit,
+        condition: it.condition || 'Factory Sealed',
+        status: 'In Stock (Active)',
+        submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      });
+    });
+
     setIsSubmitted(true);
   };
 
@@ -443,6 +514,29 @@ Please review SKU(s) and allocate to Kolkata SPO Hub for liquidation.`;
                     className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-mono focus:outline-none focus:border-emerald-700 focus:bg-white"
                   />
                 </div>
+
+                {/* Seller Dispatch / Pickup Pincode for auto-merge routing */}
+                <div className="sm:col-span-2 bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <label className="block text-xs font-bold text-emerald-950 mb-0.5">
+                        Seller Dispatch / Pickup PIN Code *
+                      </label>
+                      <p className="text-[11px] text-emerald-800">
+                        Required for smart auto-merge with customer orders for same-day/fastest local delivery.
+                      </p>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={partnerPincode}
+                      onChange={(e) => setPartnerPincode(e.target.value)}
+                      placeholder="700028"
+                      className="w-36 px-3 py-2 bg-white border border-emerald-400 rounded-lg text-sm text-stone-900 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -499,55 +593,65 @@ Please review SKU(s) and allocate to Kolkata SPO Hub for liquidation.`;
 
                       {/* Input Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Product Name */}
-                        <div className="sm:col-span-2">
-                          <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                            Product Name *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={item.productName}
-                            onChange={(e) => handleUpdateItem(item.id, 'productName', e.target.value)}
-                            placeholder="e.g. Tender Care Protecting Balm with Organic Honey"
-                            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-emerald-700"
-                          />
-                        </div>
-
-                        {/* Oriflame SKU Code */}
-                        <div>
-                          <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                            Oriflame SKU Code *
-                          </label>
-                          <input
-                            type="text"
+                        {/* Master Product Code Dropdown (Strict selection from master list - no manual typing) */}
+                        <div className="sm:col-span-3">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Select Oriflame Product Code (Dropdown Selection Only) *</span>
+                            </label>
+                            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              Admin Master Catalog
+                            </span>
+                          </div>
+                          <select
                             required
                             value={item.sku}
-                            onChange={(e) => handleUpdateItem(item.id, 'sku', e.target.value)}
-                            placeholder="e.g. 12760"
-                            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-mono focus:outline-none focus:border-emerald-700"
-                          />
-                        </div>
-
-                        {/* Category */}
-                        <div>
-                          <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                            Category
-                          </label>
-                          <select
-                            value={item.category}
-                            onChange={(e) => handleUpdateItem(item.id, 'category', e.target.value as Category)}
-                            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-emerald-700"
+                            onChange={(e) => handleSelectProduct(item.id, e.target.value)}
+                            className="w-full px-3.5 py-2.5 bg-white border-2 border-emerald-600 rounded-xl text-xs sm:text-sm text-stone-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs cursor-pointer"
                           >
-                            <option value="Skincare">Skincare</option>
-                            <option value="Wellness by Oriflame">Wellness by Oriflame</option>
-                            <option value="Fragrance & Perfumes">Fragrance & Perfumes</option>
-                            <option value="Makeup & Color">Makeup & Color</option>
-                            <option value="Hair & Personal Care">Hair & Personal Care</option>
+                            {catalogProducts.map((p) => (
+                              <option key={p.id} value={p.sku}>
+                                Code: {p.sku} — {p.title} ({p.category}) • MRP ₹{p.mrp}
+                              </option>
+                            ))}
                           </select>
+                          <p className="text-[11px] text-stone-500 mt-1">
+                            ✓ Manual product code typing is restricted to ensure 100% catalog integrity. Select product code directly from official master listings.
+                          </p>
                         </div>
 
-                        {/* Quantity */}
+                        {/* Admin-Managed Master Product Visual & Specs Card (Read-only for Brand Partner) */}
+                        <div className="sm:col-span-3 bg-stone-100/90 border border-stone-300/80 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                          <div className="w-16 h-16 rounded-lg bg-white border border-stone-200 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                            <img
+                              src={item.imageUrl || '/team-golden-star-logo-bw.svg'}
+                              alt={item.productName}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs font-bold text-stone-900">
+                                {item.productName}
+                              </span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                Admin Verified Details & Image
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-stone-600 line-clamp-1">
+                              {item.productDetails || 'Official Swedish beauty formulation verified by Admin Desk.'}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3 text-[10px] text-stone-500 font-mono pt-0.5">
+                              <span>Code: <strong className="text-stone-800">{item.sku}</strong></span>
+                              <span>Category: <strong className="text-stone-800">{item.category}</strong></span>
+                              <span>MRP: <strong className="text-stone-800">₹{item.mrp || Math.round(item.askingPrice * 1.5)}</strong></span>
+                              <span className="text-amber-800 font-sans">🔒 Only Admin can edit master photos & description</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quantity (Units) */}
                         <div>
                           <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                             Quantity (Units) *
@@ -562,52 +666,11 @@ Please review SKU(s) and allocate to Kolkata SPO Hub for liquidation.`;
                           />
                         </div>
 
-                        {/* Clearance Asking Price */}
-                        <div>
-                          <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                            Asking Price (₹ / unit) *
-                          </label>
-                          <input
-                            type="number"
-                            min="10"
-                            step="10"
-                            required
-                            value={item.askingPrice}
-                            onChange={(e) => handleUpdateItem(item.id, 'askingPrice', Math.max(10, Number(e.target.value)))}
-                            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-bold font-mono focus:outline-none focus:border-emerald-700"
-                          />
-                        </div>
-
-                        {/* Product Mnf Date (mm/yy) */}
-                        <div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <label className="text-xs font-semibold text-stone-700">
-                              Product Mnf Date *
-                            </label>
-                            <span className="text-[10px] text-stone-400 font-mono">mm/yy</span>
-                          </div>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              required
-                              maxLength={5}
-                              value={item.mnfDate}
-                              onChange={(e) => handleUpdateItem(item.id, 'mnfDate', formatMmYy(e.target.value))}
-                              placeholder="04/24"
-                              className="w-full pl-8 pr-3 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-mono focus:outline-none focus:border-emerald-700"
-                            />
-                            <Calendar className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-3" />
-                          </div>
-                          <p className="text-[10px] text-stone-500 mt-1">
-                            Month / Year manufactured
-                          </p>
-                        </div>
-
                         {/* Expiry Date (mm/yy) */}
                         <div>
                           <div className="flex items-center justify-between mb-1.5">
                             <label className="text-xs font-semibold text-stone-700">
-                              Expiry Date *
+                              Expiry Date (mm/yy) *
                             </label>
                             <span className="text-[10px] text-stone-400 font-mono">mm/yy</span>
                           </div>
@@ -628,7 +691,32 @@ Please review SKU(s) and allocate to Kolkata SPO Hub for liquidation.`;
                           </p>
                         </div>
 
-                        {/* Condition */}
+                        {/* Product Mnf Date (mm/yy) */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="text-xs font-semibold text-stone-700">
+                              Manufacturing Date *
+                            </label>
+                            <span className="text-[10px] text-stone-400 font-mono">mm/yy</span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              required
+                              maxLength={5}
+                              value={item.mnfDate}
+                              onChange={(e) => handleUpdateItem(item.id, 'mnfDate', formatMmYy(e.target.value))}
+                              placeholder="04/24"
+                              className="w-full pl-8 pr-3 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-mono focus:outline-none focus:border-emerald-700"
+                            />
+                            <Calendar className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-3" />
+                          </div>
+                          <p className="text-[10px] text-stone-500 mt-1">
+                            Month / Year manufactured
+                          </p>
+                        </div>
+
+                        {/* Package Condition */}
                         <div>
                           <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                             Package Condition
@@ -644,95 +732,25 @@ Please review SKU(s) and allocate to Kolkata SPO Hub for liquidation.`;
                           </select>
                         </div>
 
-                        {/* Product Details (Unlimited Words) */}
-                        <div className="sm:col-span-3">
+                        {/* Clearance Asking Price */}
+                        <div className="sm:col-span-2">
                           <div className="flex items-center justify-between mb-1.5">
-                            <label className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
-                              <FileText className="w-3.5 h-3.5 text-emerald-700" />
-                              <span>Product Details (Unlimited Words)</span>
+                            <label className="text-xs font-semibold text-stone-700">
+                              Asking Price (₹ / unit) *
                             </label>
-                            <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              Unlimited Words / Description
+                            <span className="text-[10px] text-stone-400">
+                              Catalog MRP: ₹{item.mrp || (item.askingPrice * 1.5)}
                             </span>
                           </div>
-                          <textarea
-                            rows={3}
-                            value={item.productDetails}
-                            onChange={(e) => handleUpdateItem(item.id, 'productDetails', e.target.value)}
-                            placeholder="Enter detailed description, key Swedish ingredients, skin benefits, shades/aroma notes, volume/size, packaging condition, or any specific details for the buyer (no word limit)..."
-                            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-emerald-700 leading-relaxed resize-y"
+                          <input
+                            type="number"
+                            min="10"
+                            step="10"
+                            required
+                            value={item.askingPrice}
+                            onChange={(e) => handleUpdateItem(item.id, 'askingPrice', Math.max(10, Number(e.target.value)))}
+                            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 font-bold font-mono focus:outline-none focus:border-emerald-700"
                           />
-                        </div>
-                        {/* Product Photo / Batch Image Upload (Optional) */}
-                        <div className="sm:col-span-3">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <label className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
-                              <ImageIcon className="w-3.5 h-3.5 text-emerald-700" />
-                              <span>Product Image / Photo Proof (Optional)</span>
-                            </label>
-                            <span className="text-[10px] text-stone-500 font-medium">
-                              Attach real batch photo or Swedish catalog image
-                            </span>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            {/* File Upload Button / Drag-and-drop */}
-                            <label className="flex-1 border border-dashed border-stone-300 hover:border-emerald-600 bg-white hover:bg-emerald-50/40 rounded-xl p-2.5 flex items-center justify-center gap-2 cursor-pointer transition-colors text-xs font-semibold text-stone-700">
-                              <Upload className="w-4 h-4 text-emerald-700 shrink-0" />
-                              <span className="truncate">
-                                {item.imageUrl ? 'Change Photo / File' : 'Upload Photo (Phone / PC)'}
-                              </span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file) return;
-                                  if (file.size > 5 * 1024 * 1024) {
-                                    alert('Image exceeds 5MB limit.');
-                                    return;
-                                  }
-                                  const reader = new FileReader();
-                                  reader.onload = (event) => {
-                                    const dataUrl = event.target?.result as string;
-                                    if (dataUrl) {
-                                      handleUpdateItem(item.id, 'imageUrl', dataUrl);
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
-                                }}
-                              />
-                            </label>
-
-                            {/* Or Direct Image Link */}
-                            <input
-                              type="url"
-                              value={item.imageUrl && !item.imageUrl.startsWith('data:') ? item.imageUrl : ''}
-                              onChange={(e) => handleUpdateItem(item.id, 'imageUrl', e.target.value)}
-                              placeholder="Or paste image URL (https://...)"
-                              className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-emerald-700 font-mono"
-                            />
-
-                            {/* Preview Thumbnail if present */}
-                            {item.imageUrl && (
-                              <div className="relative w-11 h-11 rounded-lg border border-stone-300 bg-white p-0.5 overflow-hidden shrink-0 group">
-                                <img
-                                  src={item.imageUrl}
-                                  alt="Item thumbnail"
-                                  className="w-full h-full object-contain"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateItem(item.id, 'imageUrl', '')}
-                                  className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                                  title="Remove image"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       </div>
 

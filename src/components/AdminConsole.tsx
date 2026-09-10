@@ -54,6 +54,7 @@ import { CustomerServiceDesk } from './CustomerServiceDesk';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { AdminWorkspaceSqlDesk } from './AdminWorkspaceSqlDesk';
 import { AdminFlashOffersDesk } from './AdminFlashOffersDesk';
+import { AdminMasterHub } from './AdminMasterHub';
 import { 
   Product, 
   SellerIntake, 
@@ -141,11 +142,18 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   // 'ledger'    = 4. Financial Ledger
   // 'arjo_verification' = 5. Executive Verification Desk
   // 'teams'     = 6. Team & Org Management Desk
+  // 'master_hub' = 0. Admin Master Hub (All-in-One Centralized Control Desk)
+  // 'inventory' = 1. Inventory Management
+  // 'clearance' = 2. Seller Clearance Desk
+  // 'whitelist' = 3. BP Whitelist & Margins
+  // 'ledger'    = 4. Financial Ledger
+  // 'arjo_verification' = 5. Executive Verification Desk
+  // 'teams'     = 6. Team & Org Management Desk
   // 'cloud_service' = 7. Cloud Database & Customer Service Desk
   // 'analytics' = 8. Recharts Analytics & Turnover Dashboard
   // 'workspace_sql' = 9. Google Workspace & Cloud SQL Engine Desk
   // 'flash_offers' = 10. Live Flash Countdown & Timetable Desk
-  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'arjo_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql' | 'flash_offers'>('inventory');
+  const [activeTab, setActiveTab] = useState<'master_hub' | 'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'arjo_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql' | 'flash_offers'>('master_hub');
   const [sellerApps, setSellerApps] = useState<SellerApplication[]>(getStoredSellerApps);
 
   // Team & Org Management State (Admin Team Handle)
@@ -947,6 +955,22 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 bg-neutral-900/90 p-2.5 rounded-2xl border border-neutral-800">
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
                 <button
+                  id="desk-tab-master-hub"
+                  onClick={() => setActiveTab('master_hub')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                    activeTab === 'master_hub'
+                      ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-neutral-950 font-bold shadow-lg ring-2 ring-amber-300'
+                      : 'text-amber-400 hover:text-amber-300 hover:bg-neutral-800 border border-amber-500/30'
+                  }`}
+                >
+                  <Crown className="w-4 h-4 text-amber-950" />
+                  <span>⭐ Admin Master Hub (All-in-One)</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-neutral-950 text-amber-300 font-mono font-bold">
+                    Central
+                  </span>
+                </button>
+
+                <button
                   id="desk-tab-inventory"
                   onClick={() => setActiveTab('inventory')}
                   className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
@@ -1146,6 +1170,24 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* =========================================================================
+                MODULE 0: ADMIN MASTER HUB (ALL-IN-ONE CONSOLIDATED CONTROL)
+                • Centralized Option Suite • Product Photos & Details • Stock & Timetable
+               ========================================================================= */}
+            {activeTab === 'master_hub' && (
+              <AdminMasterHub
+                products={products}
+                onSaveProducts={onSaveProducts}
+                intakes={intakes}
+                onSaveIntakes={onSaveIntakes}
+                flashConfig={flashConfig}
+                onSaveFlashConfig={onSaveFlashConfig}
+                whitelist={whitelist}
+                onSaveWhitelist={onSaveWhitelist}
+                onOpenGoogleSuite={onOpenGoogleSuite}
+              />
+            )}
 
             {/* =========================================================================
                 MODULE 1: INVENTORY MANAGEMENT

@@ -91,6 +91,26 @@ export interface FinancialLedgerSummary {
   pendingLiquidationPayable: number;
 }
 
+export interface SellerStockItem {
+  id: string;
+  sellerName: string;
+  consultantId: string;
+  phone: string;
+  pincode: string; // Seller's warehouse / dispatch location pincode
+  productCode: string; // SKU
+  productTitle: string; // Admin-verified master title
+  category: Category;
+  imageUrl?: string;
+  quantity: number;
+  expiryDate: string; // MM/YY or MM/YYYY
+  mnfDate?: string; // MM/YY
+  askingPrice: number;
+  condition: 'Factory Sealed' | 'Mint Boxed' | 'Store Display';
+  status: 'In Stock (Active)' | 'Reserved' | 'Sold Out' | 'Under Inspection';
+  submittedAt: string;
+  lastAdjustedAt?: string;
+}
+
 export interface WhitelistPartner {
   id: string;
   consultantId: string;

@@ -1,4 +1,4 @@
-import { Product, SellerIntake, WhitelistPartner, FlashSaleConfig, CartItem, BuyerOrder, SellerApplication, TeamOrg, AuthUser, GuaranteedOrder } from '../types';
+import { Product, SellerIntake, WhitelistPartner, FlashSaleConfig, CartItem, BuyerOrder, SellerApplication, TeamOrg, AuthUser, GuaranteedOrder, SellerStockItem } from '../types';
 import { INITIAL_PRODUCTS } from '../data/mockInventory';
 import { INITIAL_INTAKES, INITIAL_WHITELIST, INITIAL_FLASH_CONFIG } from '../data/mockPartners';
 
@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
   MASTER_PIN: 'golden_star_master_pin_v1',
   AUTH_USER: 'gs_active_user',
   GUARANTEED_ORDERS: 'gs_user_orders',
+  SELLER_STOCKS: 'golden_star_seller_stocks_v1',
 };
 
 export const INITIAL_TEAMS: TeamOrg[] = [
@@ -154,6 +155,117 @@ export const INITIAL_SELLER_APPS: SellerApplication[] = [
     reviewedBy: 'Arjo (Biswajit Roy)'
   }
 ];
+
+export const INITIAL_SELLER_STOCKS: SellerStockItem[] = [
+  {
+    id: 'stk-001',
+    sellerName: 'Biswajit Roy (Arjo)',
+    consultantId: '8448337',
+    phone: '7003146399',
+    pincode: '700077', // Central Dumdum Hub
+    productCode: '42255',
+    productTitle: 'NovAge Ecollagen Power Serum',
+    category: 'Skincare',
+    imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
+    quantity: 12,
+    expiryDate: '11/2026',
+    mnfDate: '01/2024',
+    askingPrice: 1399,
+    condition: 'Factory Sealed',
+    status: 'In Stock (Active)',
+    submittedAt: '2026-03-01 10:00',
+  },
+  {
+    id: 'stk-002',
+    sellerName: 'Biswajit Roy (Arjo)',
+    consultantId: '8448337',
+    phone: '7003146399',
+    pincode: '700077', // Central Dumdum Hub
+    productCode: '12760',
+    productTitle: 'Tender Care Natural Protecting Balm',
+    category: 'Skincare',
+    imageUrl: 'https://images.unsplash.com/photo-1608248597359-052a5598642e?auto=format&fit=crop&w=600&q=80',
+    quantity: 25,
+    expiryDate: '12/2026',
+    mnfDate: '02/2024',
+    askingPrice: 199,
+    condition: 'Factory Sealed',
+    status: 'In Stock (Active)',
+    submittedAt: '2026-03-01 10:00',
+  },
+  {
+    id: 'stk-003',
+    sellerName: 'Debasmita Pal',
+    consultantId: 'GS-789012',
+    phone: '9874561230',
+    pincode: '700028', // Nagerbazar / Dumdum North
+    productCode: '38531',
+    productTitle: 'Giordani Gold Essenza Parfum',
+    category: 'Fragrance & Perfumes',
+    imageUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80',
+    quantity: 6,
+    expiryDate: '10/2026',
+    mnfDate: '11/2023',
+    askingPrice: 1799,
+    condition: 'Factory Sealed',
+    status: 'In Stock (Active)',
+    submittedAt: '2026-03-05 14:00',
+  },
+  {
+    id: 'stk-004',
+    sellerName: 'Soma Mukherjee',
+    consultantId: 'GS-882103',
+    phone: '9830124567',
+    pincode: '700091', // Salt Lake Sector V
+    productCode: '38534',
+    productTitle: 'Swedish Astaxanthin & Bilberry Extract',
+    category: 'Wellness by Oriflame',
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
+    quantity: 8,
+    expiryDate: '09/2026',
+    mnfDate: '10/2023',
+    askingPrice: 1399,
+    condition: 'Factory Sealed',
+    status: 'In Stock (Active)',
+    submittedAt: '2026-03-06 11:30',
+  },
+];
+
+export function getStoredSellerStocks(): SellerStockItem[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SELLER_STOCKS);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.SELLER_STOCKS, JSON.stringify(INITIAL_SELLER_STOCKS));
+      return INITIAL_SELLER_STOCKS;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error('Failed to parse stored seller stocks', e);
+    return INITIAL_SELLER_STOCKS;
+  }
+}
+
+export function saveStoredSellerStocks(stocks: SellerStockItem[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.SELLER_STOCKS, JSON.stringify(stocks));
+    window.dispatchEvent(new Event('storage-seller-stocks-updated'));
+  } catch (e) {
+    console.error('Failed to save seller stocks', e);
+  }
+}
+
+export function addOrUpdateSellerStockItem(item: SellerStockItem): void {
+  const current = getStoredSellerStocks();
+  const existingIdx = current.findIndex(s => s.id === item.id || (s.consultantId === item.consultantId && s.productCode === item.productCode));
+  let updated: SellerStockItem[];
+  if (existingIdx >= 0) {
+    updated = [...current];
+    updated[existingIdx] = { ...updated[existingIdx], ...item, lastAdjustedAt: new Date().toISOString() };
+  } else {
+    updated = [item, ...current];
+  }
+  saveStoredSellerStocks(updated);
+}
 
 export function getStoredProducts(): Product[] {
   try {
@@ -553,6 +665,7 @@ export function resetToFactoryDefault(): void {
   localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(INITIAL_ORDERS));
   localStorage.setItem(STORAGE_KEYS.SELLER_APPS, JSON.stringify(INITIAL_SELLER_APPS));
   localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(INITIAL_TEAMS));
+  localStorage.setItem(STORAGE_KEYS.SELLER_STOCKS, JSON.stringify(INITIAL_SELLER_STOCKS));
   localStorage.removeItem(STORAGE_KEYS.CART);
   localStorage.removeItem(STORAGE_KEYS.ACTIVE_SELLER);
   window.dispatchEvent(new Event('storage-products-updated'));
@@ -561,6 +674,7 @@ export function resetToFactoryDefault(): void {
   window.dispatchEvent(new Event('storage-flash-updated'));
   window.dispatchEvent(new Event('storage-orders-updated'));
   window.dispatchEvent(new Event('storage-seller-apps-updated'));
+  window.dispatchEvent(new Event('storage-seller-stocks-updated'));
   window.dispatchEvent(new Event('storage-active-seller-updated'));
   window.dispatchEvent(new Event('storage-teams-updated'));
 }

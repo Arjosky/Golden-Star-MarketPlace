@@ -21,6 +21,7 @@ import {
 import { CartItem, CustomerOrderInfo, BuyerOrder, AuthUser, GuaranteedOrder } from '../types';
 import { getStoredOrders, saveStoredOrders, getStoredGuaranteedOrders, saveStoredGuaranteedOrders } from '../utils/storage';
 import { saveOrderToFirestore } from '../utils/firebaseStorage';
+import { findNearestSellerForPincode } from '../utils/pincodeMatcher';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -82,12 +83,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const isBrandPartner = buyerRole === 'brand_partner' || bpId.trim().length >= 4;
   const serviceChargePercent = isBrandPartner ? 5 : 15;
 
-  // PIN Logistics Calculation
-  const sellerPin = '700077';
-  const buyerPin = customer.pincode.trim();
-  const isLocalHub = buyerPin.startsWith('700') || !buyerPin;
-  const deliveryCost = isLocalHub ? 30 : 65;
-  const logisticsTierName = isLocalHub ? 'Local Hub / SPO Handover (Dumdum / Kolkata)' : 'State-Wide Express Routing';
+  // Smart Pincode Auto-Merge for Fastest Delivery
+  const buyerPin = customer.pincode.trim() || '700091';
+  const pincodeMatch = findNearestSellerForPincode(buyerPin);
+  const sellerPin = pincodeMatch.sellerPincode;
+  const deliveryCost = pincodeMatch.deliveryCost;
+  const logisticsTierName = `${pincodeMatch.tier} (${pincodeMatch.hubArea})`;
 
   // Financial Calculations
   const itemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -503,8 +504,27 @@ ${orderLines}
                         placeholder="PIN Code"
                         value={customer.pincode}
                         onChange={(e) => setCustomer({ ...customer, pincode: e.target.value })}
-                        className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:outline-none focus:border-emerald-700"
+                        className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:outline-none focus:border-emerald-700 font-mono font-bold"
                       />
+                    </div>
+
+                    {/* Live Smart Pincode Auto-Merge Result */}
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50/50 to-emerald-50 border border-emerald-300/80 text-xs shadow-2xs space-y-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-extrabold text-emerald-900 text-[10px] uppercase tracking-wide flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Pincode Auto-Merge Route</span>
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          {pincodeMatch.eta}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-700">
+                        Customer PIN: <strong className="font-mono text-stone-900">{buyerPin}</strong> ➔ Matched Hub: <strong className="font-mono text-emerald-800">{pincodeMatch.hubArea} (PIN {pincodeMatch.sellerPincode})</strong>
+                      </p>
+                      <p className="text-[10px] text-stone-500">
+                        Assigned Seller: {pincodeMatch.sellerName} • {pincodeMatch.description} (Delivery fee: ₹{deliveryCost})
+                      </p>
                     </div>
 
                     <div>

@@ -29,6 +29,7 @@ import { AuthUser, GuaranteedOrder, Product, Category, SellerApplication } from 
 import { OFFICIAL_CATALOG_DB } from '../data/catalogDB';
 import { saveUserProfileToFirestore } from '../utils/firebaseStorage';
 import { getStoredSellerApps, saveStoredSellerApps, getStoredWhitelist } from '../utils/storage';
+import { addOrUpdateSellerStockItem } from '../utils/sellerStockStorage';
 
 interface UserDashboardModalProps {
   isOpen: boolean;
@@ -72,16 +73,16 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
   const [partnerBpIdInput, setPartnerBpIdInput] = useState('');
   const [partnerAcceptedTerms, setPartnerAcceptedTerms] = useState(true);
 
-  // Seller Listing state (Brand Partner: Product Code, Quantity, Expiry Date)
-  const [skuCode, setSkuCode] = useState('');
-  const [productTitle, setProductTitle] = useState('');
+  // Seller Listing state (Brand Partner: Product Code Dropdown, Quantity, Expiry Date)
+  const [skuCode, setSkuCode] = useState('12760');
+  const [productTitle, setProductTitle] = useState('Tender Care Protecting Balm with Organic Honey');
   const [category, setCategory] = useState<Category>('Skincare');
   const [stockQty, setStockQty] = useState(5);
   const [expiryDateInput, setExpiryDateInput] = useState('11/2026');
-  const [sellingPrice, setSellingPrice] = useState(999);
-  const [catalogMrp, setCatalogMrp] = useState<number | null>(null);
-  const [volume, setVolume] = useState('50 ml');
-  const [imageUrl, setImageUrl] = useState('');
+  const [sellingPrice, setSellingPrice] = useState(249);
+  const [catalogMrp, setCatalogMrp] = useState<number | null>(399);
+  const [volume, setVolume] = useState('10.5 ml');
+  const [imageUrl, setImageUrl] = useState('https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80');
   const [productDesc, setProductDesc] = useState('Factory sealed genuine formulation liquidated under Team Golden Star custody.');
   const [priceWarning, setPriceWarning] = useState<string | null>(null);
   const [publishSuccessMessage, setPublishSuccessMessage] = useState<string | null>(null);
@@ -176,6 +177,27 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
     };
 
     onAddProduct(newProduct);
+
+    // Save to central Seller Stock Database so Admin can monitor seller inventory and pincode
+    addOrUpdateSellerStockItem({
+      id: `stk-${Date.now()}-${trimmedSku}`,
+      sellerName: user.name,
+      consultantId: user.bpId || '8448337',
+      phone: user.phone || '7003146399',
+      pincode: user.pin || '700028',
+      productCode: trimmedSku,
+      productTitle: finalTitle,
+      category: finalCategory,
+      imageUrl: finalImage,
+      quantity: stockQty,
+      expiryDate: expiryDateInput.trim(),
+      mnfDate: '01/24',
+      askingPrice: finalClearance,
+      condition: 'Factory Sealed',
+      status: 'In Stock (Active)',
+      submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+    });
+
     setPublishSuccessMessage(`Product "${newProduct.title}" [Code: ${trimmedSku}] published successfully! Stock: ${stockQty} units, Expiry: ${expiryDateInput.trim()}, Clearance: ₹${finalClearance} (95% Net Payout: ₹${Math.round(finalClearance * 0.95)}).`);
     
     // Reset 3 fields
@@ -836,21 +858,31 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
 
                   <form onSubmit={handlePublishStock} className="space-y-4 text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                      {/* INPUT 1: PRODUCT CODE */}
+                      {/* INPUT 1: PRODUCT CODE (Dropdown selection only - no manual code writing) */}
                       <div>
-                        <label className="block font-semibold mb-1 text-stone-700">
-                          1. Oriflame Product Code *
-                        </label>
-                        <input
-                          type="text"
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="font-semibold text-stone-700">
+                            1. Oriflame Product Code *
+                          </label>
+                          <span className="text-[10px] text-[#0a7d4f] font-bold">
+                            Dropdown Only
+                          </span>
+                        </div>
+                        <select
                           required
                           value={skuCode}
                           onChange={(e) => handleSkuChange(e.target.value)}
-                          placeholder="e.g. 12760, 42255, 33980, 46047"
-                          className="w-full p-2.5 border border-stone-300 rounded-xl bg-white font-mono font-bold text-[#1c2b24] focus:outline-none focus:border-[#0a7d4f]"
-                        />
-                        <span className="text-[10px] text-stone-400 mt-1 block">
-                          Official Oriflame catalog SKU
+                          className="w-full p-2.5 border-2 border-emerald-600 rounded-xl bg-white font-mono font-bold text-[#1c2b24] focus:outline-none focus:ring-2 focus:ring-[#0a7d4f] cursor-pointer"
+                        >
+                          <option value="" disabled>-- Select Product Code --</option>
+                          {Object.entries(OFFICIAL_CATALOG_DB).map(([code, item]) => (
+                            <option key={code} value={code}>
+                              Code {code} — {item.name} ({item.category})
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-[10px] text-stone-500 mt-1 block">
+                          Manual code typing disabled. Official Oriflame catalog only.
                         </span>
                       </div>
 
