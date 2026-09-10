@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ArrowDown, ArrowRight, ShieldCheck, Zap, Clock, PackageCheck, Send, BookOpen, ExternalLink, Award, Star, Layers } from 'lucide-react';
+import { Sparkles, ArrowDown, ArrowRight, ShieldCheck, Zap, Clock, PackageCheck, Send, BookOpen, ExternalLink, Award, Star } from 'lucide-react';
 import { FlashSaleConfig } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -8,7 +8,6 @@ interface HeroBannerProps {
   onGoToMarketplace: () => void;
   onScrollToCatalog?: () => void;
   onOpenSellerPortal: () => void;
-  onOpenSlidingPage?: () => void;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
@@ -16,7 +15,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onGoToMarketplace,
   onScrollToCatalog,
   onOpenSellerPortal,
-  onOpenSlidingPage,
 }) => {
   const { language, t } = useLanguage();
   // Countdown calculation
@@ -114,18 +112,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               >
                 <span>The 4 Pillars</span>
               </a>
-
-              {onOpenSlidingPage && (
-                <button
-                  id="hero-open-sliding-page-btn"
-                  onClick={onOpenSlidingPage}
-                  className="px-5 py-3.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-xs border border-emerald-300 shadow-xs flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
-                  title="Open Dedicated Automatic Sliding Showcase"
-                >
-                  <Layers className="w-4 h-4 text-emerald-700" />
-                  <span>{language === 'en' ? 'Automatic Showcase' : 'অটোমেটিক শোকেস'}</span>
-                </button>
-              )}
 
               <a
                 id="hero-digital-catalogue-btn"

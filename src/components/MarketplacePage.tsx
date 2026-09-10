@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   ArrowLeft, 
   ShoppingBag, 
-  Layers, 
   ShieldCheck, 
   Sparkles, 
   Award,
@@ -17,7 +16,6 @@ interface MarketplacePageProps {
   onAddToCart: (product: Product, quantity?: number) => void;
   onViewDetails: (product: Product) => void;
   onBackToHome: () => void;
-  onOpenSlidingPage?: () => void;
   initialCategory?: Category;
 }
 
@@ -26,7 +24,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   onAddToCart,
   onViewDetails,
   onBackToHome,
-  onOpenSlidingPage,
   initialCategory = 'All',
 }) => {
   const { language, t } = useLanguage();
@@ -63,20 +60,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 {t('nav.marketplace', 'Marketplace')}
               </span>
             </div>
-          </div>
-
-          {/* Right Quick Tools */}
-          <div className="flex items-center gap-2">
-            {onOpenSlidingPage && (
-              <button
-                onClick={onOpenSlidingPage}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
-                title="Open Interactive Automatic Sliding Showcase"
-              >
-                <Layers className="w-3.5 h-3.5 text-amber-300" />
-                <span>{language === 'en' ? 'Automatic Sliding Showcase' : 'অটোমেটিক স্লাইডিং শোকেস'}</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -125,7 +108,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         products={products}
         onAddToCart={onAddToCart}
         onViewDetails={onViewDetails}
-        onOpenSlidingPage={onOpenSlidingPage}
         initialCategory={initialCategory}
       />
     </div>

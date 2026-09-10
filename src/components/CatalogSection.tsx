@@ -4,14 +4,7 @@ import {
   Sparkles, 
   SlidersHorizontal, 
   X,
-  PackageSearch,
-  ChevronRight,
-  ChevronLeft,
-  LayoutGrid,
-  Layers,
-  ArrowRight,
-  Play,
-  Pause
+  PackageSearch
 } from 'lucide-react';
 import { Product, Category } from '../types';
 import { ProductCard } from './ProductCard';
@@ -22,7 +15,6 @@ interface CatalogSectionProps {
   onAddToCart: (product: Product, quantity?: number) => void;
   onViewDetails: (product: Product) => void;
   onOpenECatalog?: () => void;
-  onOpenSlidingPage?: () => void;
   initialCategory?: Category;
 }
 
@@ -41,7 +33,6 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
   onAddToCart,
   onViewDetails,
   onOpenECatalog,
-  onOpenSlidingPage,
   initialCategory = 'All',
 }) => {
   const { t, language } = useLanguage();
@@ -49,14 +40,10 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
   const [skuQuery, setSkuQuery] = useState('');
   const [sortBy, setSortBy] = useState<'featured' | 'discount' | 'price-asc' | 'price-desc'>('featured');
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'sliding'>('grid');
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [isAutoSlide, setIsAutoSlide] = useState(true);
 
   useEffect(() => {
     if (initialCategory) {
       setSelectedCategory(initialCategory);
-      setCurrentSlideIndex(0);
     }
   }, [initialCategory]);
 
@@ -103,32 +90,6 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
       return 0;
     });
   }, [products, selectedCategory, skuQuery, sortBy, inStockOnly]);
-
-  const itemsPerSlide = 4;
-  const totalSlides = Math.max(1, Math.ceil(filteredProducts.length / itemsPerSlide));
-  const currentSlideProducts = useMemo(() => {
-    const start = currentSlideIndex * itemsPerSlide;
-    return filteredProducts.slice(start, start + itemsPerSlide);
-  }, [filteredProducts, currentSlideIndex]);
-
-  const handleNextSlide = () => {
-    setCurrentSlideIndex((prev) => (prev + 1) % totalSlides);
-  };
-
-  const handlePrevSlide = () => {
-    setCurrentSlideIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
-
-  // Automatic slide rotation in sliding shelf view
-  useEffect(() => {
-    if (viewMode !== 'sliding' || !isAutoSlide || totalSlides <= 1) return;
-
-    const timer = setInterval(() => {
-      setCurrentSlideIndex((prev) => (prev + 1) % totalSlides);
-    }, 4000);
-
-    return () => clearInterval(timer);
-  }, [viewMode, isAutoSlide, totalSlides]);
 
   return (
     <section id="shopSection" data-alias="catalog-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -227,69 +188,23 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
             </label>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* View Mode Switcher (Grid vs Sliding Deck) */}
-            <div className="flex items-center bg-stone-100 p-0.5 rounded-xl border border-stone-200">
-              <button
-                id="catalog-view-grid-btn"
-                onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'grid' 
-                    ? 'bg-white text-stone-900 shadow-2xs font-bold' 
-                    : 'text-stone-600 hover:text-stone-900'
-                }`}
-                title="Grid View"
-              >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#0a7d4f]" />
-                <span className="hidden sm:inline">{t('catalog.gridView', 'Grid')}</span>
-              </button>
-              <button
-                id="catalog-view-sliding-btn"
-                onClick={() => setViewMode('sliding')}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'sliding' 
-                    ? 'bg-white text-stone-900 shadow-2xs font-bold' 
-                    : 'text-stone-600 hover:text-stone-900'
-                }`}
-                title="Sliding Deck View"
-              >
-                <Layers className="w-3.5 h-3.5 text-[#0a7d4f]" />
-                <span className="hidden sm:inline">{t('catalog.slideDeck', 'Sliding View')}</span>
-              </button>
-            </div>
-
-            {/* Launch Full Sliding Page Button */}
-            {onOpenSlidingPage && (
-              <button
-                id="catalog-open-sliding-page-btn"
-                onClick={onOpenSlidingPage}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
-                title="Open Dedicated Sliding Marketplace Page"
-              >
-                <Layers className="w-3.5 h-3.5 text-amber-300" />
-                <span>{t('catalog.openSliding', 'Open Sliding Page')}</span>
-                <ArrowRight className="w-3 h-3 text-amber-200" />
-              </button>
-            )}
-
-            <div className="flex items-center gap-1.5 border-l border-stone-200 pl-2">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-stone-400" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-white border border-stone-300 text-stone-800 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-600 shadow-2xs"
-              >
-                <option value="featured">Featured</option>
-                <option value="discount">Highest Discount %</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-              </select>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-stone-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-white border border-stone-300 text-stone-800 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-600 shadow-2xs font-semibold"
+            >
+              <option value="featured">Featured</option>
+              <option value="discount">Highest Discount %</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Product Content: Grid or Sliding Deck View */}
+      {/* Product Content: Fast, Responsive Grid View */}
       {filteredProducts.length === 0 ? (
         <div className="bg-white border border-stone-200 rounded-3xl p-12 text-center max-w-lg mx-auto shadow-xs">
           <PackageSearch className="w-12 h-12 text-emerald-700 mx-auto mb-3" />
@@ -309,123 +224,7 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
             Reset Filters
           </button>
         </div>
-      ) : viewMode === 'sliding' ? (
-        /* ↔️ SLIDING DECK VIEW */
-        <div className="space-y-6">
-          {/* Sliding Deck Controls Bar */}
-          <div className="bg-white/90 border border-stone-200 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-serif font-bold text-sm text-stone-900">
-                {language === 'en' ? 'Automatic Sliding Shelf' : 'অটোমেটিক স্লাইডিং শেলফ'}:
-              </span>
-              <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                Slide {currentSlideIndex + 1} of {totalSlides}
-              </span>
-              <span className="text-xs text-stone-500 hidden sm:inline">
-                ({currentSlideProducts.length} items shown)
-              </span>
-
-              {/* Pause / Resume Button */}
-              <button
-                onClick={() => setIsAutoSlide(!isAutoSlide)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 cursor-pointer transition ml-2"
-                title={isAutoSlide ? "Pause auto slide" : "Resume auto slide"}
-              >
-                {isAutoSlide ? (
-                  <>
-                    <Pause className="w-3 h-3 text-emerald-700 fill-emerald-700" />
-                    <span>Auto-slide On</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3 h-3 text-emerald-700 fill-emerald-700" />
-                    <span>Paused</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Dot Indicators */}
-              <div className="hidden md:flex items-center gap-1 max-w-[200px] overflow-x-auto">
-                {Array.from({ length: totalSlides }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentSlideIndex(idx)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      idx === currentSlideIndex
-                        ? 'w-6 bg-emerald-800'
-                        : 'w-2 bg-stone-300 hover:bg-stone-400'
-                    }`}
-                    title={`Slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
-
-              {/* Prev / Next Slide Buttons */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  id="slide-deck-prev-btn"
-                  onClick={handlePrevSlide}
-                  className="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 transition cursor-pointer flex items-center gap-1 text-xs font-semibold"
-                  title="Previous Slide"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Prev</span>
-                </button>
-                <button
-                  id="slide-deck-next-btn"
-                  onClick={handleNextSlide}
-                  className="p-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white transition cursor-pointer flex items-center gap-1 text-xs font-semibold shadow-xs"
-                  title="Next Slide"
-                >
-                  <span className="hidden sm:inline">Next</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Sliding Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300">
-            {currentSlideProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={onAddToCart}
-                onViewDetails={onViewDetails}
-              />
-            ))}
-          </div>
-
-          {/* Quick full sliding page banner */}
-          {onOpenSlidingPage && (
-            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-white/10 text-amber-300">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-serif font-bold text-sm">
-                    {language === 'en' ? 'Want a full immersive sliding experience?' : 'সম্পূর্ণ স্লাইডিং অভিজ্ঞতা চান?'}
-                  </h4>
-                  <p className="text-xs text-emerald-100">
-                    {language === 'en' ? 'Slide through Stockholm formulas with auto-play, extracts inspection, and WhatsApp checkout.' : 'অটো-প্লে ও বিস্তারিত সুইডিশ ফর্মুলা সহ পুরো স্লাইডিং পেজ দেখুন।'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={onOpenSlidingPage}
-                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs rounded-xl transition shadow-xs whitespace-nowrap cursor-pointer flex items-center gap-1.5"
-              >
-                <span>{t('catalog.openSliding', 'Open Sliding Page')}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-        </div>
       ) : (
-        /* ▦ GRID VIEW */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <ProductCard

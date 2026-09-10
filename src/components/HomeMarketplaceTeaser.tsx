@@ -4,7 +4,6 @@ import {
   ArrowRight, 
   Sparkles, 
   ShieldCheck, 
-  Layers, 
   Truck, 
   Percent, 
   Flame, 
@@ -17,13 +16,11 @@ import { useLanguage } from '../context/LanguageContext';
 
 interface HomeMarketplaceTeaserProps {
   onGoToMarketplace: (category?: Category) => void;
-  onOpenSlidingPage?: () => void;
   totalProductCount: number;
 }
 
 export const HomeMarketplaceTeaser: React.FC<HomeMarketplaceTeaserProps> = ({
   onGoToMarketplace,
-  onOpenSlidingPage,
   totalProductCount,
 }) => {
   const { language, t } = useLanguage();
@@ -149,17 +146,6 @@ export const HomeMarketplaceTeaser: React.FC<HomeMarketplaceTeaserProps> = ({
               <span>{t('home.openMarketplace', 'Open Full Marketplace Page')}</span>
               <ArrowRight className="w-4 h-4 text-stone-950" />
             </button>
-
-            {onOpenSlidingPage && (
-              <button
-                id="home-teaser-open-sliding-btn"
-                onClick={onOpenSlidingPage}
-                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/20 backdrop-blur-sm transition-all cursor-pointer"
-              >
-                <Layers className="w-4 h-4 text-amber-300" />
-                <span>{language === 'en' ? 'Open Sliding Showcase Page' : 'স্লাইডিং শোকেস পেজ খুলুন'}</span>
-              </button>
-            )}
 
             <div className="text-center lg:text-left text-[11px] text-emerald-200/80 pt-1">
               Verified by Diamond Director Subhashree Ghosh

@@ -20,7 +20,6 @@ import {
   Gift,
   Wallet,
   Award,
-  Layers,
   Phone,
   Mail,
   Check

@@ -52,7 +52,6 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { SellerPortalModal } from './components/SellerPortalModal';
 import { CartDrawer } from './components/CartDrawer';
 import { AdminConsole } from './components/AdminConsole';
-import { MarketplaceSlidePage } from './components/MarketplaceSlidePage';
 import { GoogleIntegrationsModal } from './components/GoogleIntegrationsModal';
 import { Footer } from './components/Footer';
 import { MessageCircle, Phone, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
@@ -79,7 +78,6 @@ export default function App() {
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSlidingPageOpen, setIsSlidingPageOpen] = useState(false);
 
   // Sync state with storage updates
   useEffect(() => {
@@ -336,7 +334,6 @@ export default function App() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenUserDashboard={() => setIsUserDashboardOpen(true)}
         onLogout={handleUserLogout}
-        onOpenSlidingPage={() => setIsSlidingPageOpen(true)}
         onOpenGoogleSuite={() => setIsGoogleModalOpen(true)}
       />
 
@@ -355,7 +352,6 @@ export default function App() {
                 setActiveMode('seller-portal');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onOpenSlidingPage={() => setIsSlidingPageOpen(true)}
             />
 
             {/* 5. Trust Pillars (Natural Extracts, Authentic Stock, Express SPO) */}
@@ -367,7 +363,6 @@ export default function App() {
             {/* Marketplace Invitation & Category Fast Launch (Separate Page Teaser) */}
             <HomeMarketplaceTeaser
               onGoToMarketplace={handleGoToMarketplace}
-              onOpenSlidingPage={() => setIsSlidingPageOpen(true)}
               totalProductCount={products.length}
             />
 
@@ -388,7 +383,6 @@ export default function App() {
               setActiveMode('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            onOpenSlidingPage={() => setIsSlidingPageOpen(true)}
             initialCategory={marketplaceCategory}
           />
         )}
@@ -498,20 +492,6 @@ export default function App() {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
-      />
-
-      {/* ↔️ Marketplace Express Sliding Page / স্লাইডিং শোকেস */}
-      <MarketplaceSlidePage
-        isOpen={isSlidingPageOpen}
-        onClose={() => setIsSlidingPageOpen(false)}
-        products={products}
-        onAddToCart={handleAddToCart}
-        onViewDetails={(product) => setSelectedProduct(product)}
-        onOpenCart={() => {
-          setIsSlidingPageOpen(false);
-          setIsCartOpen(true);
-        }}
-        totalCartCount={cart.reduce((acc, item) => acc + item.quantity, 0)}
       />
 
       {/* 1-Click Social & Secure Auth Modal */}
