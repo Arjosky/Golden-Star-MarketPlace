@@ -14,7 +14,9 @@ import {
   LogOut,
   Layers,
   Award,
-  Languages
+  Languages,
+  MapPin,
+  FileSpreadsheet
 } from 'lucide-react';
 import { CartItem, AuthUser } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -33,6 +35,7 @@ interface NavbarProps {
   onOpenUserDashboard: () => void;
   onLogout: () => void;
   onOpenSlidingPage?: () => void;
+  onOpenGoogleSuite?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -47,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenUserDashboard,
   onLogout,
   onOpenSlidingPage,
+  onOpenGoogleSuite,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
@@ -190,6 +194,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{language === 'en' ? 'Automatic Showcase' : 'অটোমেটিক শোকেস'}</span>
             </button>
           )}
+
+          {onOpenGoogleSuite && (
+            <button
+              id="nav-open-google-suite-btn"
+              onClick={onOpenGoogleSuite}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 font-bold transition text-xs cursor-pointer shadow-2xs"
+              title="Google Maps • Google Sheets • Google Drive Hub"
+            >
+              <MapPin className="w-3.5 h-3.5 text-red-500" />
+              <span>{language === 'en' ? 'Google Hub' : 'গুগল হাব'}</span>
+            </button>
+          )}
         </div>
 
         {/* Right Actions: Language, Auth, Cart & Mode */}
@@ -206,7 +222,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="sm:hidden">{language === 'en' ? 'BN' : 'EN'}</span>
           </button>
 
-          {/* User Auth Controls */}
+          {/* Single Unified User Auth Button when not logged in */}
+          {!user && (
+            <button
+              id="navbar-single-signin-btn"
+              onClick={onOpenAuthModal}
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-emerald-50 text-[#075c3a] border border-emerald-300 hover:border-[#0a7d4f] font-bold text-xs transition shadow-2xs hover:shadow-xs cursor-pointer"
+              title="Sign In / Register"
+            >
+              <User className="w-3.5 h-3.5 text-[#0a7d4f]" />
+              <span>{language === 'en' ? 'Sign In' : 'সাইন ইন'}</span>
+            </button>
+          )}
+
+          {/* User Auth Controls when logged in */}
           {user && (
             <div className="flex items-center gap-2">
               <button
@@ -387,6 +416,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {language === 'en' ? 'বাংলা করুন' : 'English'}
               </span>
             </button>
+
+            {onOpenGoogleSuite && (
+              <button
+                id="mobile-google-suite-btn"
+                onClick={() => {
+                  onOpenGoogleSuite();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-2.5 bg-white hover:bg-stone-50 border border-emerald-300 rounded-full text-xs font-bold text-[#075c3a] transition shadow-2xs cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-red-500" />
+                  <span>{language === 'en' ? 'Google Workspace & Maps Hub' : 'গুগল ওয়ার্কস্পেস ও ম্যাপ হাব'}</span>
+                </div>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                  Tools
+                </span>
+              </button>
+            )}
 
             {user ? (
               <button

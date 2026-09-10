@@ -15,7 +15,8 @@ import {
   UserCheck,
   Lock,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  FileSpreadsheet
 } from 'lucide-react';
 import { CartItem, CustomerOrderInfo, BuyerOrder, AuthUser, GuaranteedOrder } from '../types';
 import { getStoredOrders, saveStoredOrders, getStoredGuaranteedOrders, saveStoredGuaranteedOrders } from '../utils/storage';
@@ -611,6 +612,40 @@ ${orderLines}
                     <Phone className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Call Arjo</span>
                   </a>
+                </div>
+
+                {/* Google Integrations Quick Actions */}
+                <div className="pt-2 border-t border-stone-200/80 grid grid-cols-2 gap-2 text-[11px]">
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Dumdum+Kolkata+700077"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-1.5 px-2 bg-stone-50 hover:bg-stone-100 rounded-lg text-stone-700 border border-stone-200 flex items-center justify-center gap-1.5 transition-colors font-medium"
+                    title="View Dumdum SPO 29435 on Google Maps"
+                  >
+                    <MapPin className="w-3 h-3 text-red-500" />
+                    <span>Maps SPO Hub</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csvHeader = 'Item Name,SKU,Clearance Price,Quantity,Line Total\n';
+                      const csvRows = cartItems.map(i => `"${i.product.name.replace(/"/g, '""')}","${i.product.sku}",${i.product.clearancePrice},${i.quantity},${i.product.clearancePrice * i.quantity}`).join('\n');
+                      const blob = new Blob([csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute('download', `oriflame_cart_${Date.now()}.csv`);
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="py-1.5 px-2 bg-stone-50 hover:bg-stone-100 rounded-lg text-emerald-800 border border-stone-200 flex items-center justify-center gap-1.5 transition-colors font-medium cursor-pointer"
+                    title="Export cart to CSV for Google Sheets"
+                  >
+                    <FileSpreadsheet className="w-3 h-3 text-emerald-600" />
+                    <span>Sheets Export</span>
+                  </button>
                 </div>
               </div>
             </div>

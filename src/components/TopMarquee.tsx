@@ -6,14 +6,12 @@ interface TopMarqueeProps {
   flashConfig: FlashSaleConfig;
   onOpenSellerModal: () => void;
   onOpenFlashDeals: () => void;
-  onOpenAuthModal?: () => void;
 }
 
 export const TopMarquee: React.FC<TopMarqueeProps> = ({
   flashConfig,
   onOpenSellerModal,
   onOpenFlashDeals,
-  onOpenAuthModal,
 }) => {
   return (
     <div id="top-announcement-marquee" className="bg-gradient-to-r from-[#f4f9f6] via-[#fbfdf9] to-[#f4f9f6] text-stone-800 text-xs font-semibold py-2 px-4 overflow-hidden border-b border-emerald-200/80 relative z-30 shadow-2xs">
@@ -44,22 +42,18 @@ export const TopMarquee: React.FC<TopMarqueeProps> = ({
             <span className="text-stone-300">•</span>
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-              <strong className="font-bold text-stone-900">OFFICIAL BRAND PARTNER:</strong> Sign In / Sign Up to access member clearance benefits
+              <strong className="font-bold text-stone-900">TEAM GOLDEN STAR:</strong> Subhashree Ghosh Org • Official Swedish Hub
             </span>
           </div>
         </div>
 
-        {/* Right Quick Actions */}
+        {/* Right Assurance Badge - No redundant login button at top */}
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            id="marquee-auth-cta"
-            onClick={onOpenAuthModal || onOpenSellerModal}
-            className="text-[11px] font-bold bg-white hover:bg-stone-50 text-emerald-950 px-2.5 sm:px-3 py-1 rounded-md transition-colors border border-emerald-300 hover:border-[#0a7d4f] whitespace-nowrap cursor-pointer shadow-2xs flex items-center gap-1.5"
-          >
-            <UserCheck className="w-3.5 h-3.5 text-emerald-700" />
-            <span className="hidden sm:inline">Sign In / Sign Up</span>
-            <span className="sm:hidden">Sign In</span>
-          </button>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-900 bg-white px-2.5 sm:px-3 py-1 rounded-full border border-emerald-200 shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="hidden sm:inline">100% Genuine Guarantee</span>
+            <span className="sm:hidden">100% Genuine</span>
+          </div>
         </div>
       </div>
     </div>

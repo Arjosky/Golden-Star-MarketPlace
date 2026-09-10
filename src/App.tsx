@@ -50,8 +50,9 @@ import { SellerPortalModal } from './components/SellerPortalModal';
 import { CartDrawer } from './components/CartDrawer';
 import { AdminConsole } from './components/AdminConsole';
 import { MarketplaceSlidePage } from './components/MarketplaceSlidePage';
+import { GoogleIntegrationsModal } from './components/GoogleIntegrationsModal';
 import { Footer } from './components/Footer';
-import { MessageCircle, Phone, ArrowRight, ShieldCheck } from 'lucide-react';
+import { MessageCircle, Phone, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 
 export default function App() {
   // Global Data State from LocalStorage
@@ -71,6 +72,7 @@ export default function App() {
   const [isSellerModalOpen, setIsSellerModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserDashboardOpen, setIsUserDashboardOpen] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSlidingPageOpen, setIsSlidingPageOpen] = useState(false);
@@ -299,6 +301,7 @@ export default function App() {
         onOpenUserDashboard={() => setIsUserDashboardOpen(true)}
         onLogout={handleUserLogout}
         onOpenSlidingPage={() => setIsSlidingPageOpen(true)}
+        onOpenGoogleSuite={() => setIsGoogleModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -390,8 +393,37 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Instant WhatsApp Button for Operator Biswajit Roy (Arjo) */}
-      <aside className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2">
+      {/* Floating Instant Actions: WhatsApp-Style Cart Button & Direct WhatsApp Helpline */}
+      <aside className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5">
+        {/* 🛒 WhatsApp-style Quick Floating Cart Button */}
+        <button
+          id="floating-cart-shortcut-btn"
+          onClick={() => setIsCartOpen(true)}
+          className="flex items-center gap-2 sm:gap-2.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#0a7d4f] to-[#075c3a] hover:from-[#0c8a58] hover:to-[#096943] text-white font-bold text-xs sm:text-sm shadow-2xl hover:shadow-emerald-900/40 transition-all transform hover:scale-105 group border border-emerald-300/50 cursor-pointer"
+          title="Open Shopping Cart / শপিং কার্ট দেখুন"
+        >
+          <div className="relative">
+            <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
+            {cart.reduce((acc, item) => acc + item.quantity, 0) > 0 && (
+              <span className="absolute -top-2.5 -right-2.5 bg-[#d4a017] text-[#1c2b24] text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce">
+                {cart.reduce((acc, item) => acc + item.quantity, 0)}
+              </span>
+            )}
+          </div>
+          <span className="hidden sm:inline">
+            Cart {cart.length > 0 ? `(${cart.reduce((acc, item) => acc + item.quantity, 0)})` : ''}
+          </span>
+          <span className="sm:hidden">
+            Cart {cart.length > 0 ? `(${cart.reduce((acc, item) => acc + item.quantity, 0)})` : ''}
+          </span>
+          {cart.length > 0 && (
+            <span className="bg-white/20 text-white text-[11px] px-2 py-0.5 rounded-full font-extrabold border border-white/20">
+              ₹{cart.reduce((acc, item) => acc + (item.product.clearancePrice * item.quantity), 0).toLocaleString('en-IN')}
+            </span>
+          )}
+        </button>
+
+        {/* 💬 Direct WhatsApp Button */}
         <a
           id="floating-whatsapp-teleport-btn"
           href="https://wa.me/917003146399?text=Hello%20Biswajit%20Roy%20(Arjo)%2C%20I%20am%20inquiring%20about%20Golden%20Star%20Store%20clearance%20stock."
@@ -462,6 +494,15 @@ export default function App() {
           setIsUserDashboardOpen(false);
           setIsAuthModalOpen(true);
         }}
+      />
+
+      {/* Google Workspace & Maps Integration Suite Modal */}
+      <GoogleIntegrationsModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        products={products}
+        cartItems={cart}
+        user={authUser}
       />
 
       {/* Footer with Operator Credentials & System Governance */}
