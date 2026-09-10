@@ -11,7 +11,8 @@ import {
   WhitelistPartner, 
   FlashSaleConfig,
   Category,
-  AuthUser
+  AuthUser,
+  GuaranteedOrder
 } from './types';
 import { 
   getStoredProducts, 
@@ -29,7 +30,9 @@ import {
   resetToFactoryDefault,
   getStoredAuthUser,
   saveStoredAuthUser,
-  clearStoredAuthUser
+  clearStoredAuthUser,
+  getStoredGuaranteedOrders,
+  saveStoredGuaranteedOrders
 } from './utils/storage';
 import { saveIntakeToFirestore, saveUserProfileToFirestore } from './utils/firebaseStorage';
 import { TopMarquee } from './components/TopMarquee';
@@ -62,6 +65,7 @@ export default function App() {
   const [flashConfig, setFlashConfig] = useState<FlashSaleConfig>(getStoredFlashConfig);
   const [cart, setCart] = useState<CartItem[]>(getStoredCart);
   const [authUser, setAuthUser] = useState<AuthUser | null>(getStoredAuthUser);
+  const [guaranteedOrders, setGuaranteedOrders] = useState<GuaranteedOrder[]>(getStoredGuaranteedOrders);
   
   // UI Navigation & View State
   const [activeMode, setActiveMode] = useState<'home' | 'marketplace' | 'seller-portal'>('home');
@@ -84,12 +88,14 @@ export default function App() {
     const handleWhitelistUpdate = () => setWhitelist(getStoredWhitelist());
     const handleFlashUpdate = () => setFlashConfig(getStoredFlashConfig());
     const handleAuthUpdate = () => setAuthUser(getStoredAuthUser());
+    const handleOrdersUpdate = () => setGuaranteedOrders(getStoredGuaranteedOrders());
 
     window.addEventListener('storage-products-updated', handleProductsUpdate);
     window.addEventListener('storage-intakes-updated', handleIntakesUpdate);
     window.addEventListener('storage-whitelist-updated', handleWhitelistUpdate);
     window.addEventListener('storage-flash-updated', handleFlashUpdate);
     window.addEventListener('storage-auth-user-updated', handleAuthUpdate);
+    window.addEventListener('storage-guaranteed-orders-updated', handleOrdersUpdate);
 
     return () => {
       window.removeEventListener('storage-products-updated', handleProductsUpdate);
@@ -97,6 +103,7 @@ export default function App() {
       window.removeEventListener('storage-whitelist-updated', handleWhitelistUpdate);
       window.removeEventListener('storage-flash-updated', handleFlashUpdate);
       window.removeEventListener('storage-auth-user-updated', handleAuthUpdate);
+      window.removeEventListener('storage-guaranteed-orders-updated', handleOrdersUpdate);
     };
   }, []);
 
@@ -242,6 +249,35 @@ export default function App() {
     setAuthUser(user);
     setIsAuthModalOpen(false);
     saveUserProfileToFirestore(user);
+  };
+
+  const handleAddProduct = (newProduct: Product) => {
+    const updated = [newProduct, ...products];
+    setProducts(updated);
+    saveStoredProducts(updated);
+  };
+
+  const handleUpdateProductStock = (productId: string, newStock: number) => {
+    const updated = products.map((p) => (p.id === productId ? { ...p, stock: newStock } : p));
+    setProducts(updated);
+    saveStoredProducts(updated);
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    const updated = products.filter((p) => p.id !== productId);
+    setProducts(updated);
+    saveStoredProducts(updated);
+  };
+
+  const handleUpdateGuaranteedOrders = (newOrders: GuaranteedOrder[]) => {
+    setGuaranteedOrders(newOrders);
+    saveStoredGuaranteedOrders(newOrders);
+  };
+
+  const handleUpdateAuthUser = (updatedUser: AuthUser) => {
+    setAuthUser(updatedUser);
+    saveStoredAuthUser(updatedUser);
+    saveUserProfileToFirestore(updatedUser);
   };
 
   // Dedicated Master Panel View (Completely isolated from public storefront)
@@ -485,11 +521,22 @@ export default function App() {
         onAuthSuccess={handleUserAuthSuccess}
       />
 
-      {/* User / Seller Stock & 30-Day Claims Dashboard */}
+      {/* Universal Member Profile & Brand Partner Product Adder Dashboard */}
       <UserDashboardModal
         isOpen={isUserDashboardOpen}
         onClose={() => setIsUserDashboardOpen(false)}
         user={authUser}
+        orders={guaranteedOrders}
+        products={products}
+        onAddProduct={handleAddProduct}
+        onUpdateProductStock={handleUpdateProductStock}
+        onDeleteProduct={handleDeleteProduct}
+        onUpdateOrders={handleUpdateGuaranteedOrders}
+        onUpdateUser={handleUpdateAuthUser}
+        onGoToMarketplace={(cat) => {
+          setIsUserDashboardOpen(false);
+          handleGoToMarketplace(cat || 'All');
+        }}
         onOpenAuthModal={() => {
           setIsUserDashboardOpen(false);
           setIsAuthModalOpen(true);

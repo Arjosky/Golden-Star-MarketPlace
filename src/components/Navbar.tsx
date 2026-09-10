@@ -154,25 +154,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             {t('nav.leadership')}
           </button>
 
-          <button
-            id="nav-seller-portal-btn"
-            onClick={() => {
-              if (user) {
-                onModeChange('seller-portal');
-              } else {
-                onOpenAuthModal();
-              }
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-xl transition cursor-pointer text-xs font-semibold ${
-              activeMode === 'seller-portal'
-                ? 'text-[#0a7d4f] font-bold bg-emerald-50 border border-emerald-200'
-                : 'hover:text-[#0a7d4f]'
-            }`}
-          >
-            <UserCheck className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{user ? (language === 'en' ? 'Brand Partner Portal' : 'ব্র্যান্ড পার্টনার পোর্টাল') : t('nav.sellerPortal')}</span>
-          </button>
-
           <a
             href={digitalCatalogueUrl}
             target="_blank"
@@ -350,23 +331,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="px-3 py-2 rounded-xl text-left hover:bg-white transition"
             >
               {t('nav.leadership')}
-            </button>
-
-            <button
-              onClick={() => {
-                if (user) {
-                  onModeChange('seller-portal');
-                } else {
-                  onOpenAuthModal();
-                }
-                setMobileMenuOpen(false);
-              }}
-              className={`px-3 py-2 rounded-xl text-left transition flex items-center gap-2 ${
-                activeMode === 'seller-portal' ? 'bg-white text-[#0a7d4f] font-bold shadow-xs' : 'hover:bg-white'
-              }`}
-            >
-              <UserCheck className="w-4 h-4 text-emerald-700" />
-              <span>{user ? (language === 'en' ? 'Brand Partner Portal' : 'ব্র্যান্ড পার্টনার পোর্টাল') : t('nav.sellerPortal')}</span>
             </button>
 
             <a
