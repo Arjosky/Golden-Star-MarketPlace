@@ -8,8 +8,7 @@ import {
   User, 
   LogOut, 
   Languages, 
-  MapPin,
-  Mail 
+  MapPin 
 } from 'lucide-react';
 import { CartItem, AuthUser } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -27,7 +26,6 @@ interface NavbarProps {
   onOpenAuthModal: () => void;
   onOpenUserDashboard: () => void;
   onLogout: () => void;
-  onOpenGoogleSuite?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,7 +38,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuthModal,
   onOpenUserDashboard,
   onLogout,
-  onOpenGoogleSuite,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
@@ -149,18 +146,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{t('nav.eCatalog', 'e-Catalogue')}</span>
             <ExternalLink className="w-3 h-3" />
           </a>
-
-          {onOpenGoogleSuite && (
-            <button
-              id="nav-open-google-suite-btn"
-              onClick={onOpenGoogleSuite}
-              className="px-3 py-1.5 rounded-full flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold transition text-xs cursor-pointer border border-stone-200"
-              title="Google Workspace (Gmail, Calendar, Drive) & Cloud SQL Hub"
-            >
-              <Mail className="w-3.5 h-3.5 text-blue-600" />
-              <span>Workspace & Cloud SQL</span>
-            </button>
-          )}
         </div>
 
         {/* Right Actions: Language, Auth, Cart & Menu */}

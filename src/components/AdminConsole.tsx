@@ -45,10 +45,13 @@ import {
   Store,
   Camera,
   Image as ImageIcon,
-  Database
+  Database,
+  Mail,
+  Server
 } from 'lucide-react';
 import { CustomerServiceDesk } from './CustomerServiceDesk';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { AdminWorkspaceSqlDesk } from './AdminWorkspaceSqlDesk';
 import { 
   Product, 
   SellerIntake, 
@@ -57,7 +60,9 @@ import {
   Category,
   FinancialLedgerSummary,
   SellerApplication,
-  TeamOrg
+  TeamOrg,
+  CartItem,
+  AuthUser
 } from '../types';
 import { 
   exportDatabaseJSON, 
@@ -84,6 +89,9 @@ interface AdminConsoleProps {
   flashConfig: FlashSaleConfig;
   onSaveFlashConfig: (config: FlashSaleConfig) => void;
   onResetDefaults: () => void;
+  cartItems?: CartItem[];
+  user?: AuthUser | null;
+  onOpenGoogleSuite?: () => void;
 }
 
 // Default B&W Team Golden Star logo placeholder until verified photos are uploaded by admin
@@ -110,6 +118,9 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   flashConfig,
   onSaveFlashConfig,
   onResetDefaults,
+  cartItems,
+  user,
+  onOpenGoogleSuite,
 }) => {
   // Security Gate State (PIN: 123713 / WhatsApp OTP: 7003146399)
   const [pinInput, setPinInput] = useState('');
@@ -128,7 +139,8 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   // 'teams'     = 6. Team & Org Management Desk
   // 'cloud_service' = 7. Cloud Database & Customer Service Desk
   // 'analytics' = 8. Recharts Analytics & Turnover Dashboard
-  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'daddy_verification' | 'teams' | 'cloud_service' | 'analytics'>('inventory');
+  // 'workspace_sql' = 9. Google Workspace & Cloud SQL Engine Desk
+  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'daddy_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql'>('inventory');
   const [sellerApps, setSellerApps] = useState<SellerApplication[]>(getStoredSellerApps);
 
   // Team & Org Management State (Admin Team Handle)
@@ -1025,6 +1037,22 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   <span>8. Analytics Dashboard</span>
                   <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-neutral-950 text-amber-400 font-mono font-bold">
                     Recharts
+                  </span>
+                </button>
+
+                <button
+                  id="desk-tab-workspace-sql"
+                  onClick={() => setActiveTab('workspace_sql')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                    activeTab === 'workspace_sql'
+                      ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                  }`}
+                >
+                  <Server className="w-4 h-4" />
+                  <span>9. Workspace & Cloud SQL</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 font-mono font-bold">
+                    PostgreSQL
                   </span>
                 </button>
               </div>
@@ -2315,6 +2343,16 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               <AnalyticsDashboard 
                 products={products} 
                 intakes={intakes} 
+              />
+            )}
+
+            {/* 9. Google Workspace & Cloud SQL Engine Desk */}
+            {activeTab === 'workspace_sql' && (
+              <AdminWorkspaceSqlDesk
+                products={products}
+                cartItems={cartItems}
+                user={user}
+                onLaunchFullSuiteModal={onOpenGoogleSuite}
               />
             )}
           </div>

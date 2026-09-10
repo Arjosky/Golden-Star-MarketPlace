@@ -301,6 +301,18 @@ export default function App() {
           flashConfig={flashConfig}
           onSaveFlashConfig={handleSaveFlashConfig}
           onResetDefaults={handleResetDefaults}
+          cartItems={cart}
+          user={authUser}
+          onOpenGoogleSuite={() => setIsGoogleModalOpen(true)}
+        />
+
+        {/* Master Admin Google Workspace & Cloud SQL Focused Suite Modal */}
+        <GoogleIntegrationsModal
+          isOpen={isGoogleModalOpen}
+          onClose={() => setIsGoogleModalOpen(false)}
+          products={products}
+          cartItems={cart}
+          user={authUser}
         />
       </div>
     );
@@ -334,7 +346,6 @@ export default function App() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenUserDashboard={() => setIsUserDashboardOpen(true)}
         onLogout={handleUserLogout}
-        onOpenGoogleSuite={() => setIsGoogleModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -521,15 +532,6 @@ export default function App() {
           setIsUserDashboardOpen(false);
           setIsAuthModalOpen(true);
         }}
-      />
-
-      {/* Google Workspace & Maps Integration Suite Modal */}
-      <GoogleIntegrationsModal
-        isOpen={isGoogleModalOpen}
-        onClose={() => setIsGoogleModalOpen(false)}
-        products={products}
-        cartItems={cart}
-        user={authUser}
       />
 
       {/* Footer with Operator Credentials & System Governance */}
