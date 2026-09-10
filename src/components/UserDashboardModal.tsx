@@ -28,8 +28,7 @@ import {
 import { AuthUser, GuaranteedOrder, Product, Category, SellerApplication } from '../types';
 import { OFFICIAL_CATALOG_DB } from '../data/catalogDB';
 import { saveUserProfileToFirestore } from '../utils/firebaseStorage';
-import { getStoredSellerApps, saveStoredSellerApps, getStoredWhitelist } from '../utils/storage';
-import { addOrUpdateSellerStockItem } from '../utils/sellerStockStorage';
+import { getStoredSellerApps, saveStoredSellerApps, getStoredWhitelist, addOrUpdateSellerStockItem } from '../utils/storage';
 
 interface UserDashboardModalProps {
   isOpen: boolean;
