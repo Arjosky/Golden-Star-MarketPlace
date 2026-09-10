@@ -181,4 +181,56 @@ export const INITIAL_FLASH_CONFIG: FlashSaleConfig = {
   discountMultiplierText: 'DIRECT CLEARANCE SAVINGS UP TO 60% OFF',
   endsAt: new Date(Date.now() + 14 * 3600 * 1000 + 45 * 60 * 1000).toISOString(),
   announcementTicker: '🇸🇪 OFFICIAL ORIFLAME CLEARANCE SALE • TEAM GOLDEN STAR DIRECT SPO DISPATCH • BRAND PARTNER CLEARANCE NETWORK • WHATSAPP: 7003146399',
+  cardTitle: 'Live Flash Countdown Offer',
+  cardSubtitle: 'Exclusive Swedish clearance pricing & countdown preview',
+  featuredOffers: [
+    {
+      id: 'flash-1',
+      title: 'NovAge Ecollagen Power Serum',
+      code: '42255',
+      category: 'Skincare',
+      tag: 'Catalog Hero Offer',
+      mrp: 2499,
+      clearancePrice: 1699,
+      badge: 'Stockholm Bio-Patented',
+      img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
+      description: 'Instantly reduces wrinkles by up to 49% with patented Tri-Peptide technology & low molecular hyaluronic acid.'
+    },
+    {
+      id: 'flash-2',
+      title: 'Tender Care Natural Protecting Balm',
+      code: '12760',
+      category: 'Skincare',
+      tag: 'Global Bestseller',
+      mrp: 399,
+      clearancePrice: 249,
+      badge: 'Pure Swedish Beeswax',
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+      description: 'Iconic multi-purpose beeswax balm soothing dry lips, cuticles, elbows, and delicate skin.'
+    },
+    {
+      id: 'flash-3',
+      title: 'Giordani Gold Essenza Parfum',
+      code: '38531',
+      category: 'Fragrance & Perfumes',
+      tag: 'Luxury Swedish Haute',
+      mrp: 3999,
+      clearancePrice: 2599,
+      badge: 'Orange Blossom Luxury',
+      img: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80',
+      description: 'Sensual floral woody parfum infused with patented Orange Blossom Luxury Essenza floral note.'
+    },
+    {
+      id: 'flash-4',
+      title: 'Swedish Astaxanthin & Bilberry Extract',
+      code: '38534',
+      category: 'Wellness by Oriflame',
+      tag: 'Youth Longevity Seal',
+      mrp: 2299,
+      clearancePrice: 1599,
+      badge: '6000x Stronger than Vit C',
+      img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
+      description: 'Harvested from the Stockholm archipelago; supreme natural antioxidant shield against cellular oxidative stress.'
+    }
+  ]
 };

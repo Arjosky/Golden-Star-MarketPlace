@@ -105,12 +105,28 @@ export interface WhitelistPartner {
   joinedDate: string;
 }
 
+export interface FlashOfferItem {
+  id: string;
+  title: string;
+  code: string;
+  category: Category | string;
+  tag: string;
+  mrp: number;
+  clearancePrice: number;
+  badge?: string;
+  img: string;
+  description: string;
+}
+
 export interface FlashSaleConfig {
   isActive: boolean;
   headline: string;
   discountMultiplierText: string;
   endsAt: string; // ISO date string
   announcementTicker: string;
+  cardTitle?: string; // "Live Flash Countdown Offer"
+  cardSubtitle?: string; // "Click tab to preview key catalog items"
+  featuredOffers?: FlashOfferItem[];
 }
 
 export interface CustomerOrderInfo {

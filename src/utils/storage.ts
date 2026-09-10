@@ -290,7 +290,16 @@ export function getStoredFlashConfig(): FlashSaleConfig {
       localStorage.setItem(STORAGE_KEYS.FLASH_CONFIG, JSON.stringify(INITIAL_FLASH_CONFIG));
       return INITIAL_FLASH_CONFIG;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return {
+      ...INITIAL_FLASH_CONFIG,
+      ...parsed,
+      cardTitle: parsed.cardTitle || INITIAL_FLASH_CONFIG.cardTitle,
+      cardSubtitle: parsed.cardSubtitle || INITIAL_FLASH_CONFIG.cardSubtitle,
+      featuredOffers: (parsed.featuredOffers && parsed.featuredOffers.length > 0)
+        ? parsed.featuredOffers
+        : INITIAL_FLASH_CONFIG.featuredOffers,
+    };
   } catch (e) {
     console.error('Failed to parse stored flash config', e);
     return INITIAL_FLASH_CONFIG;

@@ -47,11 +47,13 @@ import {
   Image as ImageIcon,
   Database,
   Mail,
-  Server
+  Server,
+  Zap
 } from 'lucide-react';
 import { CustomerServiceDesk } from './CustomerServiceDesk';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { AdminWorkspaceSqlDesk } from './AdminWorkspaceSqlDesk';
+import { AdminFlashOffersDesk } from './AdminFlashOffersDesk';
 import { 
   Product, 
   SellerIntake, 
@@ -142,7 +144,8 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   // 'cloud_service' = 7. Cloud Database & Customer Service Desk
   // 'analytics' = 8. Recharts Analytics & Turnover Dashboard
   // 'workspace_sql' = 9. Google Workspace & Cloud SQL Engine Desk
-  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'arjo_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql'>('inventory');
+  // 'flash_offers' = 10. Live Flash Countdown & Timetable Desk
+  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'arjo_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql' | 'flash_offers'>('inventory');
   const [sellerApps, setSellerApps] = useState<SellerApplication[]>(getStoredSellerApps);
 
   // Team & Org Management State (Admin Team Handle)
@@ -1088,6 +1091,24 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   <span>9. Workspace & Cloud SQL</span>
                   <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 font-mono font-bold">
                     PostgreSQL
+                  </span>
+                </button>
+
+                <button
+                  id="desk-tab-flash-offers"
+                  onClick={() => setActiveTab('flash_offers')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                    activeTab === 'flash_offers'
+                      ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                  }`}
+                >
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span>10. Flash Timetable & Offers</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    flashConfig.isActive ? 'bg-amber-400 text-stone-950 animate-pulse' : 'bg-neutral-800 text-neutral-400'
+                  }`}>
+                    {flashConfig.isActive ? 'ACTIVE' : 'OFF'}
                   </span>
                 </button>
               </div>
@@ -2388,6 +2409,15 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 cartItems={cartItems}
                 user={user}
                 onLaunchFullSuiteModal={onOpenGoogleSuite}
+              />
+            )}
+
+            {/* 10. Live Flash Countdown & Timetable Desk */}
+            {activeTab === 'flash_offers' && (
+              <AdminFlashOffersDesk
+                flashConfig={flashConfig}
+                onSaveFlashConfig={onSaveFlashConfig}
+                products={products}
               />
             )}
           </div>

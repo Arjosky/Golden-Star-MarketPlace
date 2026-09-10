@@ -35,7 +35,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const { language, t } = useLanguage();
 
-  // Active Catalog Highlight Showcase
+  // Active Catalog / Flash Offer Highlight Showcase
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<number>(0);
 
   // Countdown calculation
@@ -64,8 +64,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   const digitalCatalogueUrl = "https://in.oriflame.com/products/digital-catalogue-current?store=IN-goldenstar";
   const officialStoreUrl = "https://shop.oriflame.com/IN-goldenstar";
 
-  const catalogHighlights = [
+  const catalogHighlights = (flashConfig.featuredOffers && flashConfig.featuredOffers.length > 0)
+    ? flashConfig.featuredOffers
+    : [
     {
+      id: "flash-1",
       title: "NovAge Ecollagen Power Serum",
       code: "42255",
       category: "Skincare",
@@ -77,6 +80,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       description: "Instantly reduces wrinkles by up to 49% with patented Tri-Peptide technology & low molecular hyaluronic acid."
     },
     {
+      id: "flash-2",
       title: "Tender Care Natural Protecting Balm",
       code: "12760",
       category: "Skincare",
@@ -88,6 +92,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       description: "Iconic multi-purpose beeswax balm soothing dry lips, cuticles, elbows, and delicate skin."
     },
     {
+      id: "flash-3",
       title: "Giordani Gold Essenza Parfum",
       code: "38531",
       category: "Fragrance & Perfumes",
@@ -99,6 +104,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       description: "Sensual floral woody parfum infused with patented Orange Blossom Luxury Essenza floral note."
     },
     {
+      id: "flash-4",
       title: "Swedish Astaxanthin & Bilberry Extract",
       code: "38534",
       category: "Wellness by Oriflame",
@@ -111,7 +117,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
     }
   ];
 
-  const currentHighlight = catalogHighlights[selectedCatalogCategory];
+  const activeIndex = selectedCatalogCategory < catalogHighlights.length ? selectedCatalogCategory : 0;
+  const currentHighlight = catalogHighlights[activeIndex] || catalogHighlights[0];
 
   return (
     <section id="hero-gradient-banner" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8">
@@ -243,36 +250,44 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                     <Flame className="w-4 h-4 text-amber-300" />
                   </div>
                   <div>
-                    <h3 className="font-serif font-bold text-sm text-white">Live Catalog Featured Formulations</h3>
-                    <p className="text-[10px] text-emerald-200/80">Click tab to preview key catalog items</p>
+                    <h3 className="font-serif font-bold text-sm text-white flex items-center gap-2">
+                      <span>{flashConfig.cardTitle || "Live Flash Countdown Offer"}</span>
+                      {flashConfig.isActive && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-rose-500/25 text-rose-300 border border-rose-400/40 text-[9px] font-bold font-mono tracking-wider animate-pulse">
+                          LIVE
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-[10px] text-emerald-200/80">
+                      {flashConfig.cardSubtitle || "Exclusive clearance pricing & countdown preview"}
+                    </p>
                   </div>
                 </div>
 
-                <a
-                  href={digitalCatalogueUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 underline"
-                >
-                  <span>Full Catalog</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                {flashConfig.isActive && (
+                  <div className="text-right shrink-0 bg-black/40 px-2.5 py-1 rounded-xl border border-amber-400/30">
+                    <span className="text-[9px] text-stone-300 font-mono block uppercase">ENDS IN</span>
+                    <span className="text-amber-300 font-extrabold font-mono text-xs">
+                      {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* 4 Interactive Category Pills */}
-              <div className="grid grid-cols-4 gap-1.5">
+              {/* Interactive Category Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
                 {catalogHighlights.map((item, idx) => (
                   <button
-                    key={item.code}
+                    key={item.id || item.code}
                     type="button"
                     onClick={() => setSelectedCatalogCategory(idx)}
-                    className={`py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all text-center truncate cursor-pointer ${
-                      selectedCatalogCategory === idx
+                    className={`py-1.5 px-2.5 rounded-xl text-[10px] font-bold transition-all text-center shrink-0 cursor-pointer whitespace-nowrap ${
+                      activeIndex === idx
                         ? 'bg-amber-400 text-stone-950 shadow-md font-extrabold'
                         : 'bg-black/30 hover:bg-black/50 text-white/80 border border-white/10'
                     }`}
                   >
-                    {item.category.split(' ')[0]}
+                    {item.category ? String(item.category).split(' ')[0] : `Deal #${idx + 1}`}
                   </button>
                 ))}
               </div>
