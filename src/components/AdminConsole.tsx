@@ -48,6 +48,7 @@ import {
   Database
 } from 'lucide-react';
 import { CustomerServiceDesk } from './CustomerServiceDesk';
+import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { 
   Product, 
   SellerIntake, 
@@ -126,7 +127,8 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   // 'daddy_verification' = 5. Executive Verification Desk
   // 'teams'     = 6. Team & Org Management Desk
   // 'cloud_service' = 7. Cloud Database & Customer Service Desk
-  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'daddy_verification' | 'teams' | 'cloud_service'>('inventory');
+  // 'analytics' = 8. Recharts Analytics & Turnover Dashboard
+  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'daddy_verification' | 'teams' | 'cloud_service' | 'analytics'>('inventory');
   const [sellerApps, setSellerApps] = useState<SellerApplication[]>(getStoredSellerApps);
 
   // Team & Org Management State (Admin Team Handle)
@@ -1007,6 +1009,22 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   <span>7. Cloud Database & Service</span>
                   <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 font-mono font-bold">
                     Firestore
+                  </span>
+                </button>
+
+                <button
+                  id="desk-tab-analytics"
+                  onClick={() => setActiveTab('analytics')}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                    activeTab === 'analytics'
+                      ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  <span>8. Analytics Dashboard</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-neutral-950 text-amber-400 font-mono font-bold">
+                    Recharts
                   </span>
                 </button>
               </div>
@@ -2290,6 +2308,14 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
             {/* 7. Cloud Database & Customer Service Desk */}
             {activeTab === 'cloud_service' && (
               <CustomerServiceDesk />
+            )}
+
+            {/* 8. Analytics & Telemetry Dashboard */}
+            {activeTab === 'analytics' && (
+              <AnalyticsDashboard 
+                products={products} 
+                intakes={intakes} 
+              />
             )}
           </div>
         )}
