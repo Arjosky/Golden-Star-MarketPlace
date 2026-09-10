@@ -194,7 +194,7 @@ export const SellerOnboardingGate: React.FC<SellerOnboardingGateProps> = ({
         bypassCamera: false,
         selfiePhotoUrl: selfieDataUrl,
         submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        status: 'Pending Daddy Verification'
+        status: 'Pending Arjo Verification'
       };
 
       const existingApps = getStoredSellerApps();
@@ -252,7 +252,7 @@ export const SellerOnboardingGate: React.FC<SellerOnboardingGateProps> = ({
           </div>
 
           {/* Status Details */}
-          {activeApplication.status === 'Pending Daddy Verification' && (
+          {(activeApplication.status === 'Pending Arjo Verification' || activeApplication.status === 'Pending Daddy Verification') && (
             <div className="bg-amber-950/30 border border-amber-500/40 rounded-2xl p-6 text-center space-y-4">
               <div className="w-14 h-14 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/30 animate-pulse">
                 <Clock className="w-7 h-7" />
@@ -277,13 +277,13 @@ export const SellerOnboardingGate: React.FC<SellerOnboardingGateProps> = ({
 
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <a
-                  href={`https://wa.me/917003146399?text=Hello%20Daddy%20(Biswajit%20Roy)%2C%20I%20have%20submitted%20my%20Seller%20Verification%20Selfie%20for%20BP%20ID%20${encodeURIComponent(activeApplication.consultantId)}%20(Name%3A%20${encodeURIComponent(activeApplication.partnerName)}).%20Please%20verify%20and%20unlock%20my%20Seller%20Control%20Dashboard.`}
+                  href={`https://wa.me/917003146399?text=Hello%20Arjo%20(Biswajit%20Roy)%2C%20I%20have%20submitted%20my%20Seller%20Verification%20Selfie%20for%20BP%20ID%20${encodeURIComponent(activeApplication.consultantId)}%20(Name%3A%20${encodeURIComponent(activeApplication.partnerName)}).%20Please%20verify%20and%20unlock%20my%20Seller%20Control%20Dashboard.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Ping Daddy on WhatsApp (7003146399)</span>
+                  <span>Ping Arjo on WhatsApp (7003146399)</span>
                 </a>
 
                 <button
@@ -308,7 +308,7 @@ export const SellerOnboardingGate: React.FC<SellerOnboardingGateProps> = ({
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h4 className="text-lg font-bold text-neutral-100 font-serif">
-                Daddy's Verification Approved! Account Unlocked
+                Arjo's Verification Approved! Account Unlocked
               </h4>
               <p className="text-xs text-neutral-300 max-w-md mx-auto">
                 Welcome, <strong className="text-white">{activeApplication.partnerName}</strong>. 
@@ -363,7 +363,7 @@ export const SellerOnboardingGate: React.FC<SellerOnboardingGateProps> = ({
 
               <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                 <a
-                  href={`https://wa.me/917003146399?text=Hello%20Daddy%20(Biswajit%20Roy)%2C%20my%20Seller%20ID%20${encodeURIComponent(activeApplication.consultantId)}%20was%20rejected.%20I%20am%20sharing%20my%20clarified%20Oriflame%20credentials%20for%20manual%20resolution.`}
+                  href={`https://wa.me/917003146399?text=Hello%20Arjo%20(Biswajit%20Roy)%2C%20my%20Seller%20ID%20${encodeURIComponent(activeApplication.consultantId)}%20was%20rejected.%20I%20am%20sharing%20my%20clarified%20Oriflame%20credentials%20for%20manual%20resolution.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2"

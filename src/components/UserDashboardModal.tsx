@@ -18,15 +18,17 @@ import {
   Edit3,
   ExternalLink,
   Gift,
-  Wallet,
   Award,
   Phone,
   Mail,
-  Check
+  Check,
+  Briefcase,
+  Lock
 } from 'lucide-react';
-import { AuthUser, GuaranteedOrder, Product, Category } from '../types';
+import { AuthUser, GuaranteedOrder, Product, Category, SellerApplication } from '../types';
 import { OFFICIAL_CATALOG_DB } from '../data/catalogDB';
 import { saveUserProfileToFirestore } from '../utils/firebaseStorage';
+import { getStoredSellerApps, saveStoredSellerApps, getStoredWhitelist } from '../utils/storage';
 
 interface UserDashboardModalProps {
   isOpen: boolean;
@@ -70,11 +72,12 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
   const [partnerBpIdInput, setPartnerBpIdInput] = useState('');
   const [partnerAcceptedTerms, setPartnerAcceptedTerms] = useState(true);
 
-  // Seller Listing state
+  // Seller Listing state (Brand Partner: Product Code, Quantity, Expiry Date)
   const [skuCode, setSkuCode] = useState('');
   const [productTitle, setProductTitle] = useState('');
   const [category, setCategory] = useState<Category>('Skincare');
   const [stockQty, setStockQty] = useState(5);
+  const [expiryDateInput, setExpiryDateInput] = useState('11/2026');
   const [sellingPrice, setSellingPrice] = useState(999);
   const [catalogMrp, setCatalogMrp] = useState<number | null>(null);
   const [volume, setVolume] = useState('50 ml');
@@ -104,15 +107,13 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
     const catalogItem = OFFICIAL_CATALOG_DB[trimmed];
     if (catalogItem) {
       setCatalogMrp(catalogItem.mrp);
-      if (!productTitle) setProductTitle(catalogItem.name);
+      setProductTitle(catalogItem.name);
       if (catalogItem.volume) setVolume(catalogItem.volume);
       if (catalogItem.img) setImageUrl(catalogItem.img);
       if (catalogItem.category) setCategory(catalogItem.category as Category);
-      if (sellingPrice > catalogItem.mrp) {
-        setPriceWarning(`Price Cap Alert: Price cannot exceed official catalogue MRP of ₹${catalogItem.mrp}`);
-      } else {
-        setPriceWarning(null);
-      }
+      const calculatedSelling = Math.round(catalogItem.mrp * 0.7);
+      setSellingPrice(calculatedSelling);
+      setPriceWarning(null);
     } else {
       setCatalogMrp(null);
       setPriceWarning(null);
@@ -130,46 +131,60 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
 
   const handlePublishStock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (catalogMrp && sellingPrice > catalogMrp) {
-      alert(`Selling price cannot exceed official catalogue MRP of ₹${catalogMrp}`);
+    if (!skuCode.trim()) {
+      alert('Please enter a valid Oriflame Product Code / SKU.');
+      return;
+    }
+    if (stockQty <= 0) {
+      alert('Please enter a valid quantity.');
+      return;
+    }
+    if (!expiryDateInput.trim()) {
+      alert('Please enter an expiry date (e.g. 11/2026).');
       return;
     }
 
-    const catalogItem = OFFICIAL_CATALOG_DB[skuCode];
-    const finalImage = imageUrl.trim() || catalogItem?.img || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80';
+    const trimmedSku = skuCode.trim();
+    const catalogItem = OFFICIAL_CATALOG_DB[trimmedSku];
+    const finalTitle = catalogItem?.name || productTitle || `Oriflame Formulation [Code: ${trimmedSku}]`;
+    const finalMrp = catalogItem?.mrp || catalogMrp || 1299;
+    const finalClearance = sellingPrice > 0 ? sellingPrice : Math.round(finalMrp * 0.7);
+    const finalImage = catalogItem?.img || imageUrl.trim() || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80';
+    const finalCategory = (catalogItem?.category as Category) || category || 'Skincare';
 
     const newProduct: Product = {
       id: `prod-${Date.now()}`,
-      sku: skuCode || `${Math.floor(10000 + Math.random() * 90000)}`,
-      title: productTitle || 'Oriflame Swedish Formulation',
-      subtitle: 'Clearance Liquidation Stock',
-      category: category,
-      mrp: catalogMrp || Math.round(sellingPrice * 1.35),
-      clearancePrice: sellingPrice,
+      sku: trimmedSku,
+      title: finalTitle,
+      subtitle: 'Official Brand Partner Clearance Stock',
+      category: finalCategory,
+      mrp: finalMrp,
+      clearancePrice: finalClearance,
       stock: stockQty,
       imageUrl: finalImage,
       isVerifiedImage: true,
       rating: 5.0,
       reviewCount: 1,
-      volume: volume || '50 ml',
-      description: productDesc || 'Factory sealed genuine formulation liquidated under Team Golden Star custody.',
+      volume: catalogItem?.volume || volume || '50 ml',
+      description: productDesc || 'Factory sealed genuine formulation liquidated under Team Golden Star custody. Dispatched from Dumdum SPO 29435.',
       swedishExtracts: ['Stockholm Lab Tested', 'Certified Genuine Swedish Formulation'],
       batchCode: `SE-${new Date().getFullYear()}-QC`,
-      expiryDate: '12/2026',
+      expiryDate: expiryDateInput.trim(),
       status: 'active',
       addedAt: new Date().toISOString().split('T')[0],
-      sellerConsultantId: user.bpId || user.email,
+      sellerConsultantId: user.bpId || '8448337',
     };
 
     onAddProduct(newProduct);
-    setPublishSuccessMessage(`Product "${newProduct.title}" successfully published to Marketplace at ₹${sellingPrice}! Estimated net payout: ₹${Math.round(sellingPrice * 0.95)}.`);
+    setPublishSuccessMessage(`Product "${newProduct.title}" [Code: ${trimmedSku}] published successfully! Stock: ${stockQty} units, Expiry: ${expiryDateInput.trim()}, Clearance: ₹${finalClearance} (95% Net Payout: ₹${Math.round(finalClearance * 0.95)}).`);
     
-    // Reset form
+    // Reset 3 fields
     setSkuCode('');
+    setStockQty(5);
+    setExpiryDateInput('11/2026');
     setProductTitle('');
     setCatalogMrp(null);
     setImageUrl('');
-    setPriceWarning(null);
 
     setTimeout(() => {
       setPublishSuccessMessage(null);
@@ -202,17 +217,35 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
       return;
     }
 
+    const bpId = partnerBpIdInput.trim();
+    const existingApps = getStoredSellerApps();
+    const newApp: SellerApplication = {
+      id: `app-${Date.now()}`,
+      partnerName: user.name,
+      consultantId: bpId,
+      phone: user.phone || '7003146399',
+      email: user.email,
+      directorBadge: 'Subhashree Ghosh Diamond Director Oriflame PAN India, Founder Team Golden star',
+      isWhitelisted: false,
+      bypassCamera: true,
+      submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      status: 'Pending Arjo Verification',
+    };
+    saveStoredSellerApps([newApp, ...existingApps]);
+
     const updatedUser: AuthUser = {
       ...user,
       role: 'SELLER',
-      bpId: partnerBpIdInput.trim(),
+      bpId: bpId,
+      isVerifiedSeller: false,
+      sellerStatus: 'pending_verification',
     };
 
     if (onUpdateUser) {
       onUpdateUser(updatedUser);
     }
     await saveUserProfileToFirestore(updatedUser);
-    alert(`Congratulations ${user.name}! Your Brand Partner selling privileges are now active (BP ID: ${partnerBpIdInput.trim()}). You can now list and add products to the Marketplace!`);
+    alert(`Brand Partner application submitted for Consultant ID ${bpId}! Master Admin Biswajit Roy (BP ID: 8448337) will review and verify your seller listing privileges.`);
     setActiveTab('brand-partner');
   };
 
@@ -259,7 +292,15 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
     alert(`Thank you for reviewing Order ${reviewOrderId}! Your verified review is published.`);
   };
 
-  const isBrandPartner = user.role === 'SELLER' || Boolean(user.bpId);
+  const isSellerRole = user.role === 'SELLER';
+  const whitelist = getStoredWhitelist();
+  const storedApps = getStoredSellerApps();
+  const isApprovedInApps = Boolean(user.bpId && storedApps.some((a) => a.consultantId === user.bpId && a.status === 'Approved'));
+  const isWhitelisted = Boolean(user.bpId && whitelist.some((w) => w.consultantId === user.bpId && w.status === 'Verified Active'));
+  const isVerifiedBrandPartner = isSellerRole && (user.isVerifiedSeller === true || isApprovedInApps || isWhitelisted);
+  const isPendingBrandPartner = isSellerRole && !isVerifiedBrandPartner;
+  const isBrandPartner = isVerifiedBrandPartner;
+
   const userListings = products.filter(
     (p) => p.sellerConsultantId === user.bpId || p.sellerConsultantId === user.email || (isBrandPartner && p.sellerConsultantId)
   );
@@ -283,11 +324,17 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
               </div>
               <div className="flex flex-wrap items-center gap-2 text-xs text-stone-600 mt-0.5">
                 <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
-                  isBrandPartner 
+                  isVerifiedBrandPartner 
                     ? 'bg-amber-100 text-amber-900 border-amber-300' 
+                    : isPendingBrandPartner
+                    ? 'bg-amber-50 text-amber-800 border-amber-300'
                     : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                 }`}>
-                  {isBrandPartner ? `⭐ Brand Partner (${user.bpId || 'Verified'})` : '🌸 Registered VIP Customer'}
+                  {isVerifiedBrandPartner 
+                    ? `⭐ Verified Brand Partner (${user.bpId || '8448337'})` 
+                    : isPendingBrandPartner 
+                    ? `⏳ Brand Partner (Pending Admin Review: ${user.bpId})` 
+                    : '🌸 Registered Customer (Instant Shopper)'}
                 </span>
                 <span className="text-stone-300">•</span>
                 <span className="flex items-center gap-1 text-[11px] font-medium text-stone-500">
@@ -391,11 +438,11 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 bg-white rounded-xl border border-emerald-100 shadow-2xs">
                   <div className="flex items-center gap-2 text-emerald-800 font-bold mb-1">
-                    <Wallet className="w-4 h-4 text-emerald-600" />
-                    <span>10% + 10% Loyalty</span>
+                    <Award className="w-4 h-4 text-emerald-600" />
+                    <span>Independent Clearance Store</span>
                   </div>
                   <p className="text-[11px] text-stone-600">
-                    10% direct discount on orders + 10% loyalty reward points credited to your wallet (valid for 3 months).
+                    Operated independently by Oriflame Brand Partner Biswajit Roy (Verified ID: 8448337) with genuine factory stock.
                   </p>
                 </div>
                 <div className="p-3 bg-white rounded-xl border border-emerald-100 shadow-2xs">
@@ -769,150 +816,138 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
               </div>
             )}
 
-            {isBrandPartner ? (
+            {isVerifiedBrandPartner ? (
               <>
-                {/* Product Lister Form for Brand Partners */}
+                {/* 3-Input Product Adder Form for Verified Brand Partners */}
                 <div className="p-5 sm:p-6 bg-gradient-to-br from-stone-50 via-white to-[#ebf5ef] border border-emerald-200 rounded-[2rem] space-y-4 shadow-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200 pb-3">
                     <div>
                       <h4 className="font-bold text-xs uppercase tracking-wider text-[#1c2b24] flex items-center gap-1.5">
-                        <PlusCircle className="w-4 h-4 text-[#0a7d4f]" /> Add New Product to Marketplace
+                        <PlusCircle className="w-4 h-4 text-[#0a7d4f]" /> Add Product to Clearance Marketplace
                       </h4>
                       <p className="text-[11px] text-stone-500 mt-0.5">
-                        Official Brand Partner inventory liquidation. You receive <strong>95% net payout</strong> upon customer clearance.
+                        Brand Partner verified listing. Only 3 inputs required: <strong>Product Code</strong>, <strong>Quantity</strong>, and <strong>Expiry Date</strong>.
                       </p>
                     </div>
                     <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      5% Platform Rate • 95% Net Direct
+                      BP Verified: {user.bpId || '8448337'} • 95% Net Direct Payout
                     </span>
                   </div>
 
-                  <form onSubmit={handlePublishStock} className="grid grid-cols-1 sm:grid-cols-4 gap-3.5 text-xs">
-                    <div className="sm:col-span-2">
-                      <label className="block font-semibold mb-1 text-stone-700">Oriflame SKU Code *</label>
-                      <input
-                        type="text"
-                        required
-                        value={skuCode}
-                        onChange={(e) => handleSkuChange(e.target.value)}
-                        placeholder="e.g. 42255, 33980, 46047, 42503, 12760"
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white font-mono focus:outline-none focus:border-[#0a7d4f]"
-                      />
-                      <span className="text-[10px] text-stone-400 mt-1 block">
-                        Tip: Enter 42255, 33980, or 12760 for auto catalogue title &amp; MRP detection.
-                      </span>
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block font-semibold mb-1 text-stone-700">Product Title / Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={productTitle}
-                        onChange={(e) => setProductTitle(e.target.value)}
-                        placeholder="e.g. NovAge Ecollagen Power Serum"
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white focus:outline-none focus:border-[#0a7d4f]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold mb-1 text-stone-700">Category *</label>
-                      <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value as Category)}
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white focus:outline-none focus:border-[#0a7d4f]"
-                      >
-                        <option value="Skincare">Skincare</option>
-                        <option value="Wellness by Oriflame">Wellness by Oriflame</option>
-                        <option value="Fragrance & Perfumes">Fragrance &amp; Perfumes</option>
-                        <option value="Makeup & Color">Makeup &amp; Color</option>
-                        <option value="Hair & Personal Care">Hair &amp; Personal Care</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold mb-1 text-stone-700">Volume / Weight</label>
-                      <input
-                        type="text"
-                        value={volume}
-                        onChange={(e) => setVolume(e.target.value)}
-                        placeholder="e.g. 50 ml, 100 g"
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white focus:outline-none focus:border-[#0a7d4f]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold mb-1 text-stone-700">Official MRP (₹)</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={catalogMrp ? `₹${catalogMrp}` : 'Auto-Detected'}
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-stone-100 font-mono text-stone-600 font-bold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold mb-1 text-stone-700">Units in Stock *</label>
-                      <input
-                        type="number"
-                        required
-                        min={1}
-                        value={stockQty}
-                        onChange={(e) => setStockQty(parseInt(e.target.value) || 1)}
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white font-mono focus:outline-none focus:border-[#0a7d4f]"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block font-semibold mb-1 text-stone-700">Clearance Selling Price (₹) *</label>
-                      <input
-                        type="number"
-                        required
-                        min={1}
-                        value={sellingPrice}
-                        onChange={(e) => handlePriceChange(parseFloat(e.target.value) || 0)}
-                        placeholder="Must be <= MRP"
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white font-mono font-bold text-[#0a7d4f] focus:outline-none focus:border-[#0a7d4f]"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block font-semibold mb-1 text-stone-700">Image URL (Optional)</label>
-                      <input
-                        type="url"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://... or leave empty for auto image"
-                        className="w-full p-2.5 border border-stone-200 rounded-xl bg-white focus:outline-none focus:border-[#0a7d4f]"
-                      />
-                    </div>
-
-                    {/* Real-time Net Seller Payout Preview */}
-                    <div className="sm:col-span-4 p-3.5 bg-gradient-to-r from-[#e6f4ee] to-[#dcf1e5] border border-[#0a7d4f]/30 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs">
+                  <form onSubmit={handlePublishStock} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                      {/* INPUT 1: PRODUCT CODE */}
                       <div>
-                        <span className="text-[#075c3a] font-bold block">Estimated Net Seller Payout Per Unit:</span>
-                        <span className="text-[11px] text-stone-600">5% partner platform fee applied. 95% net settlement direct to you.</span>
+                        <label className="block font-semibold mb-1 text-stone-700">
+                          1. Oriflame Product Code *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={skuCode}
+                          onChange={(e) => handleSkuChange(e.target.value)}
+                          placeholder="e.g. 12760, 42255, 33980, 46047"
+                          className="w-full p-2.5 border border-stone-300 rounded-xl bg-white font-mono font-bold text-[#1c2b24] focus:outline-none focus:border-[#0a7d4f]"
+                        />
+                        <span className="text-[10px] text-stone-400 mt-1 block">
+                          Official Oriflame catalog SKU
+                        </span>
                       </div>
-                      <div className="mt-1 sm:mt-0 font-mono text-lg font-extrabold text-[#0a7d4f]">
-                        ₹{Math.round(sellingPrice * 0.95).toFixed(2)}
+
+                      {/* INPUT 2: QUANTITY */}
+                      <div>
+                        <label className="block font-semibold mb-1 text-stone-700">
+                          2. Quantity (Units) *
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          min={1}
+                          max={500}
+                          value={stockQty}
+                          onChange={(e) => setStockQty(parseInt(e.target.value) || 1)}
+                          className="w-full p-2.5 border border-stone-300 rounded-xl bg-white font-mono font-bold text-[#1c2b24] focus:outline-none focus:border-[#0a7d4f]"
+                        />
+                        <span className="text-[10px] text-stone-400 mt-1 block">
+                          Stock available in clearance batch
+                        </span>
+                      </div>
+
+                      {/* INPUT 3: EXPIRY DATE */}
+                      <div>
+                        <label className="block font-semibold mb-1 text-stone-700">
+                          3. Expiry Date (MM/YY) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={expiryDateInput}
+                          onChange={(e) => setExpiryDateInput(e.target.value)}
+                          placeholder="e.g. 11/2026, 03/2027"
+                          className="w-full p-2.5 border border-stone-300 rounded-xl bg-white font-mono font-bold text-[#1c2b24] focus:outline-none focus:border-[#0a7d4f]"
+                        />
+                        <span className="text-[10px] text-stone-400 mt-1 block">
+                          Stockholm QA seal assurance
+                        </span>
                       </div>
                     </div>
 
-                    {priceWarning && (
-                      <div className="sm:col-span-4 text-rose-600 font-bold text-xs flex items-center gap-1.5 p-2 bg-rose-50 rounded-xl border border-rose-200">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{priceWarning}</span>
+                    {/* Auto-detected Product Preview Card */}
+                    {skuCode.trim() && (
+                      <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={
+                              OFFICIAL_CATALOG_DB[skuCode.trim()]?.img ||
+                              'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=300&q=80'
+                            }
+                            alt="Preview"
+                            className="w-12 h-12 rounded-xl object-cover border border-stone-100 shrink-0"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                {OFFICIAL_CATALOG_DB[skuCode.trim()]?.category || 'Skincare'}
+                              </span>
+                              <span className="text-[11px] font-mono text-stone-400">
+                                Code #{skuCode.trim()}
+                              </span>
+                            </div>
+                            <h5 className="font-bold text-stone-800 text-sm mt-0.5">
+                              {OFFICIAL_CATALOG_DB[skuCode.trim()]?.name || `Oriflame Formulation [Code: ${skuCode.trim()}]`}
+                            </h5>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-xs font-mono">
+                          <div>
+                            <span className="text-[10px] text-stone-400 block">Catalog MRP</span>
+                            <span className="text-stone-500 line-through">
+                              ₹{catalogMrp || OFFICIAL_CATALOG_DB[skuCode.trim()]?.mrp || 1299}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-emerald-700 font-bold block">Clearance Rate</span>
+                            <span className="text-emerald-700 font-extrabold text-sm">
+                              ₹{sellingPrice > 0 ? sellingPrice : Math.round((catalogMrp || 1299) * 0.7)}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-stone-400 block">Your Net Payout (95%)</span>
+                            <span className="text-[#0a7d4f] font-extrabold text-sm">
+                              ₹{Math.round((sellingPrice > 0 ? sellingPrice : Math.round((catalogMrp || 1299) * 0.7)) * 0.95)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     )}
 
                     <button
                       type="submit"
-                      disabled={Boolean(priceWarning)}
-                      className={`sm:col-span-4 py-3 bg-gradient-to-r from-[#0a7d4f] to-[#075c3a] text-white font-bold rounded-full uppercase tracking-wider hover:opacity-95 transition shadow-md shadow-[#0a7d4f]/25 cursor-pointer ${
-                        priceWarning ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
+                      className="w-full py-3 bg-gradient-to-r from-[#0a7d4f] to-[#075c3a] text-white font-bold rounded-full uppercase tracking-wider hover:opacity-95 transition shadow-md shadow-[#0a7d4f]/25 cursor-pointer flex items-center justify-center gap-2"
                     >
-                      Publish Product to Marketplace
+                      <PlusCircle className="w-4 h-4" />
+                      Add Product to Marketplace
                     </button>
                   </form>
                 </div>
@@ -921,11 +956,11 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
                 <div className="space-y-3">
                   <h4 className="font-bold text-xs uppercase text-[#1c2b24] flex items-center justify-between">
                     <span>Your Active Listed Products ({userListings.length})</span>
-                    <span className="text-[11px] font-mono text-[#0a7d4f]">SPO Hub: {user.pin || '700077'}</span>
+                    <span className="text-[11px] font-mono text-[#0a7d4f]">Brand Partner: {user.bpId || '8448337'}</span>
                   </h4>
                   {userListings.length === 0 ? (
                     <div className="p-6 text-center bg-stone-50 border border-stone-200 rounded-2xl text-xs text-stone-500">
-                      No custom products listed yet. Use the form above to add products to the Marketplace!
+                      No products listed yet. Enter Product Code, Quantity, and Expiry Date above to list instantly!
                     </div>
                   ) : (
                     <div className="space-y-2.5 text-xs max-h-56 overflow-y-auto pr-1">
@@ -940,13 +975,13 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
                             <div>
                               <p className="font-bold text-[#1c2b24] truncate max-w-[200px] sm:max-w-xs">{p.title}</p>
                               <p className="text-[11px] text-[#0a7d4f] font-mono font-semibold">
-                                SKU: {p.sku} • ₹{p.clearancePrice} (MRP: ₹{p.mrp}) • Payout: ₹{Math.round(p.clearancePrice * 0.95)}
+                                Code: {p.sku} • {p.stock} units • Exp: {p.expiryDate || '11/2026'} • Clearance: ₹{p.clearancePrice}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2.5">
                             <div className="flex items-center gap-1">
-                              <span className="text-[11px] text-stone-500">Stock:</span>
+                              <span className="text-[11px] text-stone-500">Units:</span>
                               <input
                                 type="number"
                                 min={0}
@@ -976,62 +1011,115 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
                   )}
                 </div>
               </>
-            ) : (
-              /* Customer wants to become Brand Partner */
-              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-amber-50 via-white to-emerald-50 border border-amber-300 space-y-4 shadow-sm">
-                <div className="flex items-center gap-2 text-amber-900">
-                  <Sparkles className="w-5 h-5 text-amber-600" />
-                  <h4 className="font-serif font-extrabold text-base">Activate Brand Partner Product Adding</h4>
-                </div>
-                <div className="p-4 bg-white/90 rounded-2xl border border-amber-200 space-y-2 text-xs text-stone-700">
-                  <p className="font-bold text-[#075c3a] flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    Joining is completely FREE. No joining fees or extra money is ever required.
-                  </p>
-                  <p className="font-bold text-[#075c3a] flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    There are NO mandatory monthly targets. You work completely at your own pace.
-                  </p>
-                  <p className="text-stone-600">
-                    Earn an immediate <strong>20% direct profit margin</strong> on all catalog sales, plus 3% to 22% monthly team volume bonuses under Subhashree Ghosh Diamond Director organization.
-                  </p>
-                </div>
-
-                <form onSubmit={handleActivateBrandPartner} className="space-y-3 text-xs">
+            ) : isPendingBrandPartner ? (
+              /* Brand Partner Pending Admin Verification */
+              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-amber-50 via-white to-orange-50/50 border border-amber-300 space-y-4 shadow-sm text-xs">
+                <div className="flex items-center gap-2.5 text-amber-900">
+                  <Clock className="w-5 h-5 text-amber-600 shrink-0" />
                   <div>
-                    <label className="block font-semibold mb-1 text-stone-700">
-                      Your Oriflame Brand Partner / Consultant ID *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={partnerBpIdInput}
-                      onChange={(e) => setPartnerBpIdInput(e.target.value)}
-                      placeholder="e.g. 700314, 849201"
-                      className="w-full p-3 border border-stone-300 rounded-xl bg-white font-mono focus:outline-none focus:border-[#0a7d4f]"
-                    />
+                    <h4 className="font-serif font-extrabold text-base text-amber-950">
+                      Brand Partner Verification Pending
+                    </h4>
+                    <p className="text-[11px] text-amber-800">
+                      Your Consultant ID <strong>{user.bpId}</strong> is under review by Master Admin Biswajit Roy (BP ID: 8448337).
+                    </p>
                   </div>
+                </div>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={partnerAcceptedTerms}
-                      onChange={(e) => setPartnerAcceptedTerms(e.target.checked)}
-                      className="rounded text-[#0a7d4f] focus:ring-[#0a7d4f]"
-                    />
-                    <span className="text-stone-600 text-[11px]">
-                      I confirm I am an authentic Oriflame Brand Partner and agree to Stockholm quality liquidation standards.
+                <div className="p-4 bg-white rounded-2xl border border-amber-200 space-y-2 text-stone-700">
+                  <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <span className="text-stone-500 font-semibold">Registered Partner Name:</span>
+                    <span className="font-bold text-stone-800">{user.name}</span>
+                  </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <span className="text-stone-500 font-semibold">Consultant / BP ID:</span>
+                    <span className="font-mono font-bold text-amber-800">{user.bpId}</span>
+                  </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <span className="text-stone-500 font-semibold">Verification Desk:</span>
+                    <span className="font-bold text-emerald-800">Executive Console Review</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-500 font-semibold">Product Adder Status:</span>
+                    <span className="px-2.5 py-1 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 font-bold text-[10px] inline-flex items-center gap-1 shadow-xs">
+                      Awaiting Arjo Approval
                     </span>
-                  </label>
+                  </div>
+                </div>
 
-                  <button
-                    type="submit"
-                    disabled={!partnerAcceptedTerms}
-                    className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold rounded-full uppercase tracking-wider hover:opacity-95 transition shadow-md cursor-pointer disabled:opacity-50"
-                  >
-                    Activate Brand Partner Privileges &amp; Add Products
-                  </button>
-                </form>
+                <p className="text-stone-600 leading-relaxed">
+                  Only verified Oriflame Brand Partners can list inventory on the clearance marketplace. Once approved at the Executive Verification Desk, the 3-input product adder will unlock automatically.
+                </p>
+              </div>
+            ) : (
+              /* Customer Account Notice & Brand Partner Application */
+              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-emerald-50/70 via-white to-amber-50/50 border border-emerald-200 space-y-4 shadow-sm text-xs">
+                <div className="flex items-center gap-2.5 text-stone-900">
+                  <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0" />
+                  <div>
+                    <h4 className="font-serif font-extrabold text-base text-[#1c2b24]">
+                      Customer Account Active (Shopping Privileges)
+                    </h4>
+                    <p className="text-[11px] text-stone-600">
+                      Zero verification required for customer ordering. Door-step delivery &amp; 30-day guarantee active.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white rounded-2xl border border-stone-200 space-y-2 text-stone-700">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold">
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span>Product Addition is Reserved for Verified Brand Partners</span>
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    To maintain factory seal authenticity and avoid counterfeit inventory, only verified Oriflame Brand Partners can list products for clearance. Customer accounts do not require any verification for buying.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200 space-y-3">
+                  <h5 className="font-bold text-amber-900 flex items-center gap-1.5 text-xs">
+                    <Sparkles className="w-4 h-4 text-amber-600" /> Are you an Oriflame Brand Partner?
+                  </h5>
+                  <p className="text-[11px] text-stone-600">
+                    Submit your Oriflame Consultant / BP ID below for admin verification by Master Admin Biswajit Roy (Verified ID: 8448337). Joining is completely free.
+                  </p>
+
+                  <form onSubmit={handleActivateBrandPartner} className="space-y-3">
+                    <div>
+                      <label className="block font-semibold mb-1 text-stone-700">
+                        Oriflame Consultant / Brand Partner ID *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={partnerBpIdInput}
+                        onChange={(e) => setPartnerBpIdInput(e.target.value)}
+                        placeholder="e.g. 700314, 8448337"
+                        className="w-full p-2.5 border border-stone-300 rounded-xl bg-white font-mono text-xs focus:outline-none focus:border-[#0a7d4f]"
+                      />
+                    </div>
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={partnerAcceptedTerms}
+                        onChange={(e) => setPartnerAcceptedTerms(e.target.checked)}
+                        className="rounded text-[#0a7d4f] focus:ring-[#0a7d4f]"
+                      />
+                      <span className="text-stone-600 text-[11px]">
+                        I confirm this is my authentic Oriflame Consultant ID and request admin verification.
+                      </span>
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={!partnerAcceptedTerms}
+                      className="w-full py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold rounded-xl uppercase tracking-wider hover:opacity-95 transition shadow-xs cursor-pointer disabled:opacity-50 text-xs"
+                    >
+                      Submit for Brand Partner Verification
+                    </button>
+                  </form>
+                </div>
               </div>
             )}
           </div>

@@ -14,7 +14,7 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
-          name: 'Golden Star Store - Oriflame Swedish Clearance',
+          name: 'Golden Star Oriflame Store',
           short_name: 'GoldenStar',
           description: 'Official Swedish beauty clearance marketplace and master command console for Team Golden Star.',
           theme_color: '#0a0a0a',

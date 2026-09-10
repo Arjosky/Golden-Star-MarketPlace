@@ -22,7 +22,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: true,
     flashDiscountPercent: 43,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-01',
   },
   {
@@ -46,7 +46,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: true,
     flashDiscountPercent: 42,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-01',
   },
   {
@@ -70,7 +70,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: true,
     flashDiscountPercent: 33,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-02',
   },
   {
@@ -118,7 +118,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: true,
     flashDiscountPercent: 41,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-03',
   },
   {
@@ -142,7 +142,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: false,
     flashDiscountPercent: 40,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-03',
   },
   {
@@ -166,7 +166,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: true,
     flashDiscountPercent: 40,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-03',
   },
   {
@@ -214,7 +214,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: false,
     flashDiscountPercent: 42,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-04',
   },
   {
@@ -238,7 +238,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: false,
     flashDiscountPercent: 42,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-04',
   },
   {
@@ -262,7 +262,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: false,
     flashDiscountPercent: 40,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-05',
   },
   {
@@ -286,7 +286,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     isPrimeFlash: true,
     flashDiscountPercent: 41,
     status: 'active',
-    sellerConsultantId: 'GS-700314',
+    sellerConsultantId: '8448337',
     addedAt: '2026-03-05',
   }
 ];

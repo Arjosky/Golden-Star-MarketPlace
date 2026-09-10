@@ -3,7 +3,7 @@ import { SellerIntake, WhitelistPartner, FlashSaleConfig } from '../types';
 export const INITIAL_WHITELIST: WhitelistPartner[] = [
   {
     id: 'wp-1',
-    consultantId: 'GS-700314',
+    consultantId: '8448337',
     fullName: 'Biswajit Roy (Arjo)',
     phone: '7003146399',
     email: 'oriflamearjo@gmail.com',
@@ -178,7 +178,7 @@ export const INITIAL_INTAKES: SellerIntake[] = [
 export const INITIAL_FLASH_CONFIG: FlashSaleConfig = {
   isActive: true,
   headline: '⚡ SWEDISH CLEARANCE PRIME FLASH — UP TO 60% OFF',
-  discountMultiplierText: 'EXTRA 10% APPLIED TO PRIME BUNDLES',
+  discountMultiplierText: 'DIRECT CLEARANCE SAVINGS UP TO 60% OFF',
   endsAt: new Date(Date.now() + 14 * 3600 * 1000 + 45 * 60 * 1000).toISOString(),
   announcementTicker: '🇸🇪 OFFICIAL ORIFLAME CLEARANCE SALE • TEAM GOLDEN STAR DIRECT SPO DISPATCH • BRAND PARTNER CLEARANCE NETWORK • WHATSAPP: 7003146399',
 };

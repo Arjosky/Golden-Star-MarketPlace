@@ -72,7 +72,9 @@ import {
   getStoredTeams,
   saveStoredTeams,
   getStoredMasterPin,
-  saveStoredMasterPin
+  saveStoredMasterPin,
+  getStoredAuthUser,
+  saveStoredAuthUser
 } from '../utils/storage';
 
 interface AdminConsoleProps {
@@ -135,12 +137,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   // 'clearance' = 2. Seller Clearance Desk
   // 'whitelist' = 3. BP Whitelist & Margins
   // 'ledger'    = 4. Financial Ledger
-  // 'daddy_verification' = 5. Executive Verification Desk
+  // 'arjo_verification' = 5. Executive Verification Desk
   // 'teams'     = 6. Team & Org Management Desk
   // 'cloud_service' = 7. Cloud Database & Customer Service Desk
   // 'analytics' = 8. Recharts Analytics & Turnover Dashboard
   // 'workspace_sql' = 9. Google Workspace & Cloud SQL Engine Desk
-  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'daddy_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'clearance' | 'whitelist' | 'ledger' | 'arjo_verification' | 'teams' | 'cloud_service' | 'analytics' | 'workspace_sql'>('inventory');
   const [sellerApps, setSellerApps] = useState<SellerApplication[]>(getStoredSellerApps);
 
   // Team & Org Management State (Admin Team Handle)
@@ -208,14 +210,14 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     saveStoredTeams(updated);
   };
 
-  const handleDaddyApprove = (appId: string) => {
+  const handleArjoApprove = (appId: string) => {
     const updated = sellerApps.map(app => {
       if (app.id === appId) {
         return {
           ...app,
           status: 'Approved' as const,
           reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-          reviewedBy: 'Daddy (Biswajit Roy - Arjo)'
+          reviewedBy: 'Arjo (Biswajit Roy)'
         };
       }
       return app;
@@ -241,9 +243,28 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       };
       onSaveWhitelist([newPartnerEntry, ...whitelist]);
     }
+
+    // Sync current logged-in user if matching
+    if (target) {
+      const currentUser = getStoredAuthUser();
+      if (
+        currentUser &&
+        (currentUser.bpId === target.consultantId ||
+          currentUser.phone === target.phone ||
+          (currentUser.email && currentUser.email === target.email))
+      ) {
+        saveStoredAuthUser({
+          ...currentUser,
+          role: 'SELLER',
+          isVerifiedSeller: true,
+          sellerStatus: 'active',
+          bpId: target.consultantId || currentUser.bpId,
+        });
+      }
+    }
   };
 
-  const handleDaddyReject = (appId: string) => {
+  const handleArjoReject = (appId: string) => {
     const reason = prompt('Enter Rejection Reason for Seller Application:', 'Face ID selfie does not match physical ID card / Subhashree Ghosh tree.');
     if (!reason) return;
     const guide = prompt('Enter Resolution Guide:', 'Please re-upload a clear selfie holding your Oriflame Consultant card, or contact Arjo on WhatsApp 7003146399.');
@@ -256,13 +277,27 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           rejectionReason: reason,
           resolutionGuide: guide || 'Contact Biswajit Roy (Arjo) on 7003146399.',
           reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-          reviewedBy: 'Daddy (Biswajit Roy - Arjo)'
+          reviewedBy: 'Arjo (Biswajit Roy)'
         };
       }
       return app;
     });
     setSellerApps(updated);
     saveStoredSellerApps(updated);
+
+    const target = sellerApps.find(a => a.id === appId);
+    if (target) {
+      const currentUser = getStoredAuthUser();
+      if (
+        currentUser &&
+        (currentUser.bpId === target.consultantId || currentUser.phone === target.phone)
+      ) {
+        saveStoredAuthUser({
+          ...currentUser,
+          isVerifiedSeller: false,
+        });
+      }
+    }
   };
 
   // Product Editor Modal State
@@ -563,7 +598,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
         isPrimeFlash: editingProduct.isPrimeFlash || false,
         flashDiscountPercent: Math.round((((editingProduct.mrp || 999) - (editingProduct.clearancePrice || 599)) / (editingProduct.mrp || 999)) * 100),
         status: editingProduct.status || 'active',
-        sellerConsultantId: editingProduct.sellerConsultantId || 'GS-700314',
+        sellerConsultantId: editingProduct.sellerConsultantId || '8448337',
         addedAt: new Date().toISOString().substring(0, 10),
       };
       onSaveProducts([created, ...products]);
@@ -975,19 +1010,19 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 </button>
 
                 <button
-                  id="desk-tab-daddy_verification"
-                  onClick={() => setActiveTab('daddy_verification')}
+                  id="desk-tab-arjo_verification"
+                  onClick={() => setActiveTab('arjo_verification')}
                   className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                    activeTab === 'daddy_verification'
+                    activeTab === 'arjo_verification'
                       ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
                       : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
                   }`}
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>5. Executive Verification</span>
-                  {sellerApps.filter(a => a.status === 'Pending Daddy Verification').length > 0 && (
+                  {sellerApps.filter(a => a.status === 'Pending Arjo Verification' || a.status === 'Pending Daddy Verification').length > 0 && (
                     <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-400 text-neutral-950 font-extrabold animate-pulse">
-                      {sellerApps.filter(a => a.status === 'Pending Daddy Verification').length} Review
+                      {sellerApps.filter(a => a.status === 'Pending Arjo Verification' || a.status === 'Pending Daddy Verification').length} Review
                     </span>
                   )}
                 </button>
@@ -1548,7 +1583,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   </div>
 
                   <p className="text-xs text-neutral-300">
-                    Type any Consultant ID (e.g. <code>GS-700314</code>, <code>GS-882103</code>, or <code>RET-104928</code>) or phone number to test the real-time auto-detection:
+                    Type any Consultant ID (e.g. <code>8448337</code>, <code>GS-882103</code>, or <code>RET-104928</code>) or phone number to test the real-time auto-detection:
                   </p>
 
                   <div className="flex gap-2">
@@ -1911,7 +1946,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 • Operator: Biswajit Roy (Arjo) • Face ID / Selfie Review
                 • 1-Click Approve / Reject with Reason & Guide • Auto Whitelist Sync
                ========================================================================= */}
-            {activeTab === 'daddy_verification' && (
+            {activeTab === 'arjo_verification' && (
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -1943,10 +1978,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   <div className="bg-neutral-900/80 p-4 rounded-2xl border border-neutral-800">
                     <div className="text-xs text-amber-400 flex items-center gap-1 font-semibold">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>Pending Daddy Review</span>
+                      <span>Pending Arjo Review</span>
                     </div>
                     <div className="text-xl font-bold font-mono text-amber-400 mt-1">
-                      {sellerApps.filter(a => a.status === 'Pending Daddy Verification').length}
+                      {sellerApps.filter(a => a.status === 'Pending Arjo Verification' || a.status === 'Pending Daddy Verification').length}
                     </div>
                   </div>
 
@@ -2009,7 +2044,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                     ? 'bg-rose-950 text-rose-300 border border-rose-500/30'
                                     : 'bg-amber-950 text-amber-300 border border-amber-500/30 animate-pulse'
                                 }`}>
-                                  {app.status === 'Pending Daddy Verification' ? 'Pending Review' : app.status}
+                                  {(app.status === 'Pending Arjo Verification' || app.status === 'Pending Daddy Verification') ? 'Pending Review' : app.status}
                                 </span>
                               </div>
 
@@ -2024,10 +2059,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {app.status === 'Pending Daddy Verification' && (
+                            {(app.status === 'Pending Arjo Verification' || app.status === 'Pending Daddy Verification') && (
                               <>
                                 <button
-                                  onClick={() => handleDaddyApprove(app.id)}
+                                  onClick={() => handleArjoApprove(app.id)}
                                   className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
                                 >
                                   <Check className="w-3.5 h-3.5" />
@@ -2035,7 +2070,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                 </button>
 
                                 <button
-                                  onClick={() => handleDaddyReject(app.id)}
+                                  onClick={() => handleArjoReject(app.id)}
                                   className="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-rose-900/60 text-neutral-300 hover:text-rose-200 text-xs font-semibold border border-neutral-700 flex items-center gap-1.5 cursor-pointer"
                                 >
                                   <X className="w-3.5 h-3.5" />
@@ -2053,7 +2088,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
                             {app.status === 'Rejected' && (
                               <button
-                                onClick={() => handleDaddyApprove(app.id)}
+                                onClick={() => handleArjoApprove(app.id)}
                                 className="px-3 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-amber-400 text-xs font-semibold cursor-pointer"
                               >
                                 Re-approve Partner

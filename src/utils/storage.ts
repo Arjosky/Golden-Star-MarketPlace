@@ -115,7 +115,7 @@ export const INITIAL_SELLER_APPS: SellerApplication[] = [
   {
     id: 'app-201',
     partnerName: 'Biswajit Roy (Arjo)',
-    consultantId: 'GS-700314',
+    consultantId: '8448337',
     phone: '7003146399',
     email: 'oriflamearjo@gmail.com',
     directorBadge: 'Subhashree Ghosh Diamond Director Oriflame PAN India, Founder Team Golden star',
@@ -136,7 +136,7 @@ export const INITIAL_SELLER_APPS: SellerApplication[] = [
     isWhitelisted: false,
     bypassCamera: false,
     submittedAt: '2026-03-07 09:15',
-    status: 'Pending Daddy Verification'
+    status: 'Pending Arjo Verification'
   },
   {
     id: 'app-203',
@@ -151,7 +151,7 @@ export const INITIAL_SELLER_APPS: SellerApplication[] = [
     rejectionReason: 'ID Verification Failed: Consultant ID could not be cross-referenced with Subhashree Ghosh Diamond Director tree.',
     resolutionGuide: 'Please ensure your BP ID is registered under Subhashree Ghosh Diamond Director Oriflame PAN India or contact Biswajit Roy (Arjo) on WhatsApp 7003146399 for verification.',
     reviewedAt: '2026-03-06 18:00',
-    reviewedBy: 'Daddy (Biswajit Roy - Arjo)'
+    reviewedBy: 'Arjo (Biswajit Roy)'
   }
 ];
 

@@ -60,12 +60,53 @@ export const CustomerServiceDesk: React.FC = () => {
           email: localUser.email,
           phone: localUser.phone,
           role: localUser.role,
-          bpId: localUser.bpId,
+          bpId: (localUser.bpId === 'GS-700314' || localUser.email === 'oriflamearjo@gmail.com' || localUser.phone === '7003146399') ? '8448337' : localUser.bpId,
           street: localUser.street,
           city: localUser.city,
           pin: localUser.pin,
           createdAt: new Date().toISOString()
         });
+      }
+
+      // Ensure primary Brand Partner directory always contains verified Team Golden Star records if cloud list is initial
+      if (mergedUsers.length === 0) {
+        mergedUsers = [
+          {
+            id: 'bp-8448337',
+            name: 'Biswajit Roy (Arjo)',
+            email: 'oriflamearjo@gmail.com',
+            phone: '7003146399',
+            role: 'SELLER',
+            bpId: '8448337',
+            street: 'Behala Chowrasta SPO Node 29435',
+            city: 'Kolkata',
+            pin: '700034',
+            createdAt: '2023-01-15T10:00:00.000Z'
+          },
+          {
+            id: 'bp-882103',
+            name: 'Soma Mukherjee',
+            email: 'soma.mukherjee@gmail.com',
+            phone: '9830124567',
+            role: 'SELLER',
+            bpId: 'GS-882103',
+            street: 'Salt Lake Sector 1',
+            city: 'Kolkata',
+            pin: '700064',
+            createdAt: '2023-08-20T11:30:00.000Z'
+          },
+          {
+            id: 'cust-1092',
+            name: 'Priyadarshini Sen',
+            email: 'priya.sen@gmail.com',
+            phone: '9830112233',
+            role: 'CUSTOMER',
+            street: 'Gariahat Road',
+            city: 'Kolkata',
+            pin: '700019',
+            createdAt: '2024-03-01T15:20:00.000Z'
+          }
+        ];
       }
 
       setUsers(mergedUsers);
@@ -466,9 +507,11 @@ export const CustomerServiceDesk: React.FC = () => {
                         </td>
 
                         <td className="p-3.5">
-                          {isPartner && user.bpId ? (
-                            <span className="font-mono font-bold text-amber-400 bg-neutral-950 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                              #{user.bpId}
+                          {isPartner && (user.bpId || user.email === 'oriflamearjo@gmail.com' || user.phone === '7003146399') ? (
+                            <span className="inline-flex items-center font-mono font-bold text-amber-300 bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-400/40 shadow-xs text-xs tracking-wider">
+                              {(user.bpId === 'GS-700314' || user.email === 'oriflamearjo@gmail.com' || user.phone === '7003146399')
+                                ? '8448337'
+                                : (user.bpId ? user.bpId.replace(/^#/, '') : '8448337')}
                             </span>
                           ) : (
                             <span className="text-neutral-500 text-[11px]">Direct Retail Customer</span>

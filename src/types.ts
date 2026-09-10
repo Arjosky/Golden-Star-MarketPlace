@@ -157,11 +157,11 @@ export interface SellerApplication {
   bypassCamera: boolean;
   selfiePhotoUrl?: string;
   submittedAt: string;
-  status: 'Approved' | 'Pending Daddy Verification' | 'Rejected';
+  status: 'Approved' | 'Pending Arjo Verification' | 'Pending Daddy Verification' | 'Rejected';
   rejectionReason?: string;
   resolutionGuide?: string;
   reviewedAt?: string;
-  reviewedBy?: string; // 'Daddy (Biswajit Roy - Arjo)'
+  reviewedBy?: string; // 'Arjo (Biswajit Roy)'
 }
 
 export interface TeamOrg {
@@ -191,6 +191,8 @@ export interface AuthUser {
   bpId?: string;
   provider?: string;
   avatarUrl?: string;
+  isVerifiedSeller?: boolean; // Required for Brand Partner to list products
+  sellerStatus?: 'active' | 'pending_verification' | 'rejected';
 }
 
 export interface GuaranteedOrder {

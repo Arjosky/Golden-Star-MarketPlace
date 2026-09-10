@@ -1,5 +1,5 @@
 {
-  "name": "Golden Star Store - Oriflame Clearance ",
+  "name": "Golden Star Oriflame Store",
   "description": "Official Swedish beauty clearance marketplace and master command console for Team Golden Star, operated by Biswajit Roy (Arjo). Features live Oriflame inventory, WhatsApp teleportation dispatch (7003146399), Brand Partner network clearance intake, and admin telemetry.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
