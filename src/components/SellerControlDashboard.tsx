@@ -70,6 +70,27 @@ export const SellerControlDashboard: React.FC<SellerControlDashboardProps> = ({
     saveStoredOrders(updated);
   };
 
+  const sanitizeImageUrl = (url: string): string => {
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+
+    // Allow app-relative image paths like /products/prod-12760.svg
+    if (trimmed.startsWith('/')) return trimmed;
+
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return parsed.toString();
+      }
+    } catch {
+      // Invalid URL
+    }
+
+    return '';
+  };
+
+  const safePreviewImageUrl = sanitizeImageUrl(newImageUrl);
+
   // MRP Cap Validation: Asking price CANNOT exceed MRP
   const isMrpCapped = newAskingPrice > newMrp;
 
@@ -629,9 +650,9 @@ export const SellerControlDashboard: React.FC<SellerControlDashboardProps> = ({
                   onChange={(e) => setNewImageUrl(e.target.value)}
                   className="flex-1 px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 focus:border-amber-500 rounded-xl text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none"
                 />
-                {newImageUrl && (
+                {safePreviewImageUrl && (
                   <img
-                    src={newImageUrl}
+                    src={safePreviewImageUrl}
                     alt="Preview"
                     className="w-11 h-11 object-cover rounded-lg border border-neutral-700 bg-black"
                   />
