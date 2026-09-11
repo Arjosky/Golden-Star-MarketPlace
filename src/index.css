@@ -132,3 +132,6 @@
 h1, h2, h3, .font-serif {
   font-family: 'Playfair Display', 'Cinzel', serif, system-ui;
 }
+#netlify-badge {
+    display: none !important;
+}
