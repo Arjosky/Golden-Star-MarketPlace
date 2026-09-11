@@ -59,6 +59,26 @@ export const SellerControlDashboard: React.FC<SellerControlDashboardProps> = ({
   const [newImageUrl, setNewImageUrl] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
+  const sanitizeImageUrl = (rawUrl: string): string => {
+    const value = rawUrl.trim();
+    if (!value) return '/products/fallback-product.svg';
+
+    // Allow app-local absolute paths only.
+    if (value.startsWith('/')) return value;
+
+    // Allow only http/https absolute URLs.
+    try {
+      const parsed = new URL(value);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return parsed.toString();
+      }
+    } catch {
+      // Invalid URL -> fallback
+    }
+
+    return '/products/fallback-product.svg';
+  };
+
   // Sync data
   const handleUpdateProducts = (updated: Product[]) => {
     setProducts(updated);
@@ -127,7 +147,7 @@ export const SellerControlDashboard: React.FC<SellerControlDashboardProps> = ({
       mrp: newMrp,
       clearancePrice: newAskingPrice,
       stock: newQuantity,
-      imageUrl: newImageUrl || '/products/fallback-product.svg',
+      imageUrl: sanitizeImageUrl(newImageUrl),
       rating: 4.9,
       reviewCount: 14,
       volume: 'Standard Swedish Pack',
@@ -631,7 +651,7 @@ export const SellerControlDashboard: React.FC<SellerControlDashboardProps> = ({
                 />
                 {newImageUrl && (
                   <img
-                    src={newImageUrl}
+                    src={sanitizeImageUrl(newImageUrl)}
                     alt="Preview"
                     className="w-11 h-11 object-cover rounded-lg border border-neutral-700 bg-black"
                   />
